@@ -1,0 +1,46 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <!-- iCAR source values are physical px at 141 dpi; this fixed overlay uses physical px. -->
+    <dimen name="icar_spacing_12">12px</dimen>
+    <dimen name="icar_spacing_18">18px</dimen>
+    <dimen name="icar_spacing_24">24px</dimen>
+    <dimen name="icar_spacing_42">42px</dimen>
+    <dimen name="icar_control_height">84px</dimen>
+    <dimen name="icar_control_radius">18px</dimen>
+    <dimen name="icar_action_icon_size">30px</dimen>
+    <dimen name="icar_title_text_size">31.75sp</dimen>
+    <dimen name="icar_body_text_size">27.25sp</dimen>
+    <dimen name="icar_caption_text_size">22.75sp</dimen>
+
+    <dimen name="drawer_top_spacing">@dimen/icar_spacing_42</dimen>
+    <dimen name="drawer_header_height">@dimen/icar_control_height</dimen>
+    <dimen name="drawer_grid_horizontal_padding">@dimen/icar_spacing_18</dimen>
+    <dimen name="drawer_grid_vertical_padding">@dimen/icar_spacing_18</dimen>
+
+    <dimen name="drawer_app_item_height">172px</dimen>
+    <dimen name="drawer_app_item_top_padding">10px</dimen>
+    <dimen name="drawer_app_icon_size">96px</dimen>
+    <dimen name="drawer_app_label_spacing">10px</dimen>
+    <dimen name="drawer_app_label_height">56px</dimen>
+    <dimen name="drawer_app_label_horizontal_padding">4px</dimen>
+
+    <dimen name="drawer_action_area_height">126px</dimen>
+    <dimen name="drawer_action_height">@dimen/icar_control_height</dimen>
+    <dimen name="drawer_action_horizontal_margin">@dimen/icar_spacing_18</dimen>
+    <dimen name="drawer_action_bottom_margin">@dimen/icar_spacing_18</dimen>
+    <dimen name="drawer_action_icon_size">@dimen/icar_action_icon_size</dimen>
+    <dimen name="drawer_action_icon_spacing">@dimen/icar_spacing_12</dimen>
+
+    <dimen name="drawer_panel_radius">@dimen/icar_control_radius</dimen>
+    <dimen name="drawer_control_radius">@dimen/icar_control_radius</dimen>
+    <dimen name="drawer_title_text_size">38sp</dimen>
+    <dimen name="drawer_app_label_text_size">24sp</dimen>
+
+    <dimen name="install_header_action_min_width">276px</dimen>
+    <dimen name="install_status_height">48px</dimen>
+    <dimen name="install_loading_size">30px</dimen>
+    <dimen name="install_file_row_height">112px</dimen>
+    <dimen name="install_file_icon_size">48px</dimen>
+    <dimen name="install_file_chevron_size">30px</dimen>
+    <dimen name="install_empty_icon_size">72px</dimen>
+</resources>

@@ -38,6 +38,9 @@ function read(relativePath) {
 
 const build = read("app/build.gradle.kts");
 const manifest = read("app/src/main/AndroidManifest.xml");
+const systemActionLauncher = read(
+  "app/src/main/java/com/tcrrry/desktop/system/SystemActionLauncher.kt",
+);
 const stateText = read(".new-project-template/state.json");
 
 for (const expected of [
@@ -54,16 +57,32 @@ for (const expected of [
 
 const allowedPermissions = new Set([
   "android.permission.FOREGROUND_SERVICE",
-  "android.permission.MODIFY_AUDIO_SETTINGS",
   "android.permission.READ_EXTERNAL_STORAGE",
   "android.permission.RECEIVE_BOOT_COMPLETED",
-  "android.permission.REQUEST_DELETE_PACKAGES",
   "android.permission.REQUEST_INSTALL_PACKAGES",
   "android.permission.SYSTEM_ALERT_WINDOW",
 ]);
 
 for (const match of manifest.matchAll(/<uses-permission\s+android:name="([^"]+)"/g)) {
   if (!allowedPermissions.has(match[1])) failures.push(`Manifest 出现未批准权限：${match[1]}`);
+}
+
+if (!manifest.includes("com.tcrrry.icar.surface.action.ACQUIRE_OCCUPANCY_LEASE")) {
+  failures.push("Manifest 缺少桌面表面占用协议的 Service 查询声明");
+}
+
+const standardWindowMetadataCount = (
+  manifest.match(/com\.tcrrry\.icar\.window\.STANDARD_FLOATING_WINDOW/g) ?? []
+).length;
+if (standardWindowMetadataCount < 2) {
+  failures.push("Manifest 未完整声明 03桌面自身标准浮窗 Activity");
+}
+
+if (!systemActionLauncher.includes("standardFloatingWindowCoordinator.launchExclusive")) {
+  failures.push("抽屉顶层系统窗口未接入标准浮窗互斥协调器");
+}
+if (systemActionLauncher.includes("context.startActivity(")) {
+  failures.push("SystemActionLauncher 绕过了标准浮窗互斥协调器");
 }
 
 function collectFiles(directory) {
@@ -74,10 +93,14 @@ function collectFiles(directory) {
   });
 }
 
-for (const file of collectFiles(join(root, "app"))) {
+for (const file of collectFiles(join(root, "app/src/main"))) {
   if (!/\.(kt|kts|xml|pro)$/.test(file)) continue;
-  if (readFileSync(file, "utf8").includes("com.tcrrry.desktoplyrics")) {
+  const source = readFileSync(file, "utf8");
+  if (source.includes("com.tcrrry.desktoplyrics")) {
     failures.push(`产品源码引用了 03歌词 身份：${file.slice(root.length + 1)}`);
+  }
+  if (/Settings\.Secure\.put[A-Za-z]*\s*\(/.test(source)) {
+    failures.push(`产品源码写入 Settings.Secure：${file.slice(root.length + 1)}`);
   }
 }
 

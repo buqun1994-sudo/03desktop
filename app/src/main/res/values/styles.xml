@@ -1,0 +1,47 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <style name="IcarText.Base" parent="@android:style/Widget.TextView">
+        <item name="android:fontFamily">sans-serif</item>
+        <item name="android:includeFontPadding">false</item>
+        <item name="android:letterSpacing">0</item>
+        <item name="android:textColor">@color/on_surface</item>
+    </style>
+
+    <style name="IcarText.Title" parent="IcarText.Base">
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textSize">@dimen/icar_title_text_size</item>
+    </style>
+
+    <style name="DrawerText.Title" parent="IcarText.Base">
+        <item name="android:fontFamily">sans-serif-medium</item>
+        <item name="android:textSize">@dimen/drawer_title_text_size</item>
+        <item name="android:textStyle">bold</item>
+    </style>
+
+    <style name="IcarText.Body" parent="IcarText.Base">
+        <item name="android:textSize">@dimen/icar_body_text_size</item>
+    </style>
+
+    <style name="IcarText.Action" parent="IcarText.Body">
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="IcarText.Caption" parent="IcarText.Base">
+        <item name="android:textColor">@color/on_surface_muted</item>
+        <item name="android:textSize">@dimen/icar_caption_text_size</item>
+    </style>
+
+    <style name="DrawerText.AppLabel" parent="IcarText.Base">
+        <item name="android:lineSpacingExtra">0px</item>
+        <item name="android:textColor">@color/drawer_app_label</item>
+        <item name="android:textSize">@dimen/drawer_app_label_text_size</item>
+    </style>
+
+    <style name="InstallText.FileName" parent="IcarText.Body">
+        <item name="android:fontFamily">sans-serif-medium</item>
+    </style>
+
+    <style name="InstallText.EmptyTitle" parent="IcarText.Title">
+        <item name="android:gravity">center</item>
+    </style>
+</resources>

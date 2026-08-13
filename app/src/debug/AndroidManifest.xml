@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<manifest xmlns:android="http://schemas.android.com/apk/res/android">
+
+    <instrumentation
+        android:name=".smoke.SmokeInstrumentation"
+        android:functionalTest="true"
+        android:handleProfiling="false"
+        android:label="03桌面 V1 smoke"
+        android:targetPackage="com.tcrrry.desktop" />
+
+</manifest>

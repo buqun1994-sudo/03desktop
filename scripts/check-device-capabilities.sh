@@ -44,13 +44,12 @@ if ! "$ANDROID_ADB_BIN" shell pm list packages -3 | tr -d '\r' | grep -Fxq "pack
 fi
 
 LAUNCH_COMPONENT="$(resolve_activity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER "$PROBE_PACKAGE")"
-UNINSTALL_COMPONENT="$(resolve_activity -a android.intent.action.DELETE -d "package:$PROBE_PACKAGE")"
+UNINSTALL_COMPONENT="$(resolve_activity -a android.settings.APPLICATION_DETAILS_SETTINGS -d "package:$PROBE_PACKAGE")"
 INSTALL_COMPONENT="$(resolve_activity -a android.intent.action.VIEW -t application/vnd.android.package-archive -d file:///sdcard/Download/capability-probe.apk)"
 UNKNOWN_SOURCE_COMPONENT="$(resolve_activity -a android.settings.MANAGE_UNKNOWN_APP_SOURCES -d package:com.tcrrry.desktop)"
-HOME_COMPONENT="$(resolve_activity -a android.intent.action.MAIN -c android.intent.category.HOME)"
 VOLUMES="$($ANDROID_ADB_BIN shell sm list-volumes all | tr -d '\r')"
 
-for component in "$LAUNCH_COMPONENT" "$UNINSTALL_COMPONENT" "$INSTALL_COMPONENT" "$UNKNOWN_SOURCE_COMPONENT" "$HOME_COMPONENT"; do
+for component in "$LAUNCH_COMPONENT" "$UNINSTALL_COMPONENT" "$INSTALL_COMPONENT" "$UNKNOWN_SOURCE_COMPONENT"; do
     if [[ "$component" != */* ]]; then
         echo "系统入口解析失败：$component" >&2
         exit 1
@@ -63,9 +62,8 @@ if [[ "$VOLUMES" != *"public:"*" mounted "* ]]; then
 fi
 
 echo "第三方应用启动入口：$LAUNCH_COMPONENT"
-echo "系统卸载确认入口：$UNINSTALL_COMPONENT"
+echo "系统应用信息入口：$UNINSTALL_COMPONENT"
 echo "系统 APK 安装入口：$INSTALL_COMPONENT"
 echo "未知来源授权入口：$UNKNOWN_SOURCE_COMPONENT"
-echo "车机首页入口：$HOME_COMPONENT"
 echo "外部存储：检测到已挂载公共卷"
 echo "车机能力只读检查通过；未启动、安装、卸载、授权或修改设置。"

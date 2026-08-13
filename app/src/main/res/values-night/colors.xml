@@ -1,0 +1,16 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <color name="surface">#151719</color>
+    <color name="on_surface">#FFFFFFFF</color>
+    <color name="on_surface_muted">#8FFFFFFF</color>
+    <color name="drawer_app_label">#B2FFFFFF</color>
+    <color name="drawer_surface_top">#F90E0E0E</color>
+    <color name="drawer_surface_center">#FD0C0B0E</color>
+    <color name="drawer_surface_bottom">#FF0A0A0A</color>
+    <color name="drawer_surface_elevated">#4D40435B</color>
+    <color name="drawer_danger">#DD766D</color>
+    <color name="drawer_on_danger">#FFFFFFFF</color>
+    <color name="drawer_handle">#2BFFFFFF</color>
+    <color name="install_row_divider">#1AFFFFFF</color>
+    <color name="install_empty_icon">#80FFFFFF</color>
+</resources>

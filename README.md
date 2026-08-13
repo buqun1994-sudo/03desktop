@@ -5,8 +5,8 @@
 ## 当前状态
 
 1. 项目已从 `NewProject` 模板完成独立初始化，不再处于 `INIT_REQUIRED`。
-2. 当前只落地 Android 工程底座、项目约束和 V1 架构方案，尚未施工悬浮抽屉业务。
-3. V1 架构方案与“隐藏 `03桌面` 自身”决策已经确认；后续默认在一个施工对话内连续完成整个 V1，内部经过 3 个技术检查点，最终统一安装到车机并交付验收。
+2. V1 业务基线已经实现，当前按用户体验反馈进行小切片调整和修复。
+3. 默认节奏是“实现最小切片 -> Debug 构建 -> 立即交给用户手测”；完整测试、Lint 和真机验收只在里程碑、提交/发布准备或明确要求时执行。
 
 ## 开发入口
 
@@ -17,8 +17,7 @@
 5. 验证矩阵：`docs/testing/验证矩阵.md`。
 
 ```bash
-./scripts/check-android-env.sh
-./scripts/gradlew-jdk17.sh testDebugUnitTest lintDebug assembleDebug
+./scripts/gradlew-jdk17.sh assembleDebug
 ```
 
 本机路径、签名材料、Gradle 缓存和 Android SDK 不属于仓库内容。
