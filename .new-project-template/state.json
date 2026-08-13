@@ -1,0 +1,11 @@
+{
+  "schemaVersion": 1,
+  "state": "initialized",
+  "templateName": "new-project-template",
+  "projectName": "03桌面",
+  "projectType": "desktop-client",
+  "description": "Android 9 车机上补齐第三方应用展示与管理能力的轻量右侧应用抽屉",
+  "sourceDir": "app/src/main",
+  "checkCommand": "./scripts/check-android-env.sh && node scripts/check-android-config.mjs && ./scripts/gradlew-jdk17.sh testDebugUnitTest lintDebug assembleDebug",
+  "initializedAt": "2026-08-13T11:18:29.281Z"
+}

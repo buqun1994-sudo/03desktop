@@ -1,0 +1,46 @@
+# Local env and secrets
+.env
+.env.*
+!.env.example
+*.local.*
+*.pem
+*.key
+local.properties
+android-env.local.properties
+keystore.properties
+*.jks
+*.keystore
+
+# Dependencies and build outputs
+node_modules/
+.gradle/
+.kotlin/
+dist/
+build/
+**/build/
+out/
+.next/
+.turbo/
+coverage/
+captures/
+.externalNativeBuild/
+.cxx/
+*.apk
+*.aab
+*.apks
+
+# Logs and temporary artifacts
+*.log
+.tmp/
+tmp/
+temp/
+current-*
+diff-*
+*.har
+*.trace.zip
+
+# OS and editor
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
