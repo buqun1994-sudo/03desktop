@@ -5,13 +5,15 @@
     android:layout_width="match_parent"
     android:layout_height="match_parent"
     android:background="@drawable/bg_drawer_panel"
-    android:clipChildren="true"
-    android:clipToPadding="true"
+    android:clipChildren="false"
+    android:clipToPadding="false"
     tools:ignore="PxUsage">
 
     <LinearLayout
         android:layout_width="match_parent"
         android:layout_height="match_parent"
+        android:clipChildren="false"
+        android:clipToPadding="false"
         android:orientation="vertical">
 
         <TextView
@@ -23,14 +25,18 @@
             android:text="@string/drawer_apps_title" />
 
         <FrameLayout
+            android:id="@+id/drawer_grid_layer"
             android:layout_width="match_parent"
             android:layout_height="0px"
+            android:clipChildren="false"
+            android:clipToPadding="false"
             android:layout_weight="1">
 
             <androidx.recyclerview.widget.RecyclerView
                 android:id="@+id/app_grid"
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
+                android:clipChildren="false"
                 android:clipToPadding="false"
                 android:overScrollMode="never"
                 android:paddingLeft="@dimen/drawer_grid_horizontal_padding"
@@ -72,7 +78,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/drawer_action_height"
                 android:layout_gravity="bottom"
-                android:background="@drawable/bg_drawer_install"
                 android:clickable="true"
                 android:focusable="true"
                 android:gravity="center"
@@ -98,7 +103,6 @@
                 android:layout_width="match_parent"
                 android:layout_height="@dimen/drawer_action_height"
                 android:layout_gravity="bottom"
-                android:background="@drawable/bg_drawer_uninstall"
                 android:gravity="center"
                 android:orientation="horizontal">
 

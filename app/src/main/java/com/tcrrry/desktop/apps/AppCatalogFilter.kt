@@ -11,6 +11,7 @@ data class CatalogCandidate(
     val lastUpdateTime: Long,
     val isSystemApp: Boolean,
     val isUpdatedSystemApp: Boolean,
+    val isOemIntegratedApp: Boolean,
     val applicationEnabled: Boolean,
     val activityEnabled: Boolean,
     val priority: Int,
@@ -60,6 +61,7 @@ object AppCatalogFilter {
     fun isEligible(candidate: CatalogCandidate): Boolean =
         !candidate.isSystemApp &&
             !candidate.isUpdatedSystemApp &&
+            !candidate.isOemIntegratedApp &&
             candidate.applicationEnabled &&
             candidate.activityEnabled &&
             candidate.className.isNotBlank()

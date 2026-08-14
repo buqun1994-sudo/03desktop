@@ -3,9 +3,11 @@ package com.tcrrry.desktop.apps
 import android.graphics.Rect
 import android.view.MotionEvent
 import android.view.View
+import android.view.animation.DecelerateInterpolator
 import android.widget.ViewAnimator
 import androidx.recyclerview.widget.ItemTouchHelper
 import androidx.recyclerview.widget.RecyclerView
+import com.tcrrry.desktop.R
 import com.tcrrry.desktop.model.AppEntry
 
 internal fun isDraggedCenterInsideBounds(
@@ -65,6 +67,7 @@ sealed class DragResult {
 class AppDragController(
     private val recyclerView: RecyclerView,
     private val adapter: AppGridAdapter,
+    private val dragLayer: View,
     private val actionSwitcher: ViewAnimator,
     private val uninstallTarget: View,
     private val onDragStateChanged: (Boolean) -> Unit,
@@ -73,9 +76,12 @@ class AppDragController(
 ) {
     private var dragSession: DragSession? = null
     private var draggedEntry: AppEntry? = null
+    private var draggedItemView: View? = null
     private var uninstallHit = false
     private var gestureCancelled = false
     private val targetBounds = Rect()
+    private val dragLayerTranslationZ = recyclerView.resources.getDimension(R.dimen.drawer_drag_layer_translation_z)
+    private val dragInterpolator = DecelerateInterpolator()
     private val touchObserver = object : RecyclerView.OnItemTouchListener {
         override fun onInterceptTouchEvent(rv: RecyclerView, event: MotionEvent): Boolean {
             if (event.actionMasked == MotionEvent.ACTION_CANCEL) gestureCancelled = true
@@ -115,9 +121,12 @@ class AppDragController(
             if (position == RecyclerView.NO_POSITION) return
             dragSession = DragSession(adapter.snapshot())
             draggedEntry = adapter.snapshot().getOrNull(position)
+            draggedItemView = viewHolder.itemView
             gestureCancelled = false
             uninstallHit = false
             actionSwitcher.displayedChild = UNINSTALL_ACTION_INDEX
+            updateDragPresentation(viewHolder.itemView, dragging = true, animate = true)
+            updateUninstallPresentation(activated = false, animate = false)
             onDragStateChanged(true)
         }
 
@@ -132,8 +141,11 @@ class AppDragController(
         ) {
             super.onChildDraw(canvas, recyclerView, viewHolder, dX, dY, actionState, isCurrentlyActive)
             if (actionState != ItemTouchHelper.ACTION_STATE_DRAG || !isCurrentlyActive) return
-            uninstallHit = isDraggedCenterInsideTarget(viewHolder.itemView, dX, dY)
-            uninstallTarget.isActivated = uninstallHit
+            val nextUninstallHit = isDraggedCenterInsideTarget(viewHolder.itemView, dX, dY)
+            if (nextUninstallHit != uninstallHit) {
+                uninstallHit = nextUninstallHit
+                updateUninstallPresentation(activated = uninstallHit, animate = true)
+            }
         }
 
         override fun clearView(recyclerView: RecyclerView, viewHolder: RecyclerView.ViewHolder) {
@@ -152,8 +164,10 @@ class AppDragController(
     fun detach() {
         itemTouchHelper.attachToRecyclerView(null)
         recyclerView.removeOnItemTouchListener(touchObserver)
+        draggedItemView?.let { updateDragPresentation(it, dragging = false, animate = false) }
+        draggedItemView = null
         actionSwitcher.displayedChild = INSTALL_ACTION_INDEX
-        uninstallTarget.isActivated = false
+        updateUninstallPresentation(activated = false, animate = false)
     }
 
     private fun isDraggedCenterInsideTarget(itemView: View, dX: Float, dY: Float): Boolean {
@@ -185,10 +199,13 @@ class AppDragController(
     private fun finishDrag() {
         val session = dragSession ?: return
         val entry = draggedEntry
+        val itemView = draggedItemView
         dragSession = null
         draggedEntry = null
+        draggedItemView = null
         actionSwitcher.displayedChild = INSTALL_ACTION_INDEX
-        uninstallTarget.isActivated = false
+        if (itemView != null) updateDragPresentation(itemView, dragging = false, animate = true)
+        updateUninstallPresentation(activated = false, animate = false)
         onDragStateChanged(false)
 
         when (val result = session.finish(gestureCancelled, uninstallHit, entry?.canRequestUninstall == true)) {
@@ -205,8 +222,37 @@ class AppDragController(
         gestureCancelled = false
     }
 
+    private fun updateDragPresentation(itemView: View, dragging: Boolean, animate: Boolean) {
+        dragLayer.translationZ = if (dragging) dragLayerTranslationZ else 0f
+        animateScale(itemView, if (dragging) DRAGGED_ITEM_SCALE else NORMAL_SCALE, animate)
+    }
+
+    private fun updateUninstallPresentation(activated: Boolean, animate: Boolean) {
+        uninstallTarget.isActivated = activated
+        animateScale(uninstallTarget, if (activated) UNINSTALL_HIT_SCALE else NORMAL_SCALE, animate)
+    }
+
+    private fun animateScale(view: View, scale: Float, animate: Boolean) {
+        view.animate().cancel()
+        if (!animate) {
+            view.scaleX = scale
+            view.scaleY = scale
+            return
+        }
+        view.animate()
+            .scaleX(scale)
+            .scaleY(scale)
+            .setDuration(DRAG_VISUAL_DURATION_MS)
+            .setInterpolator(dragInterpolator)
+            .start()
+    }
+
     private companion object {
         const val INSTALL_ACTION_INDEX = 0
         const val UNINSTALL_ACTION_INDEX = 1
+        const val NORMAL_SCALE = 1f
+        const val DRAGGED_ITEM_SCALE = 1.06f
+        const val UNINSTALL_HIT_SCALE = 1.06f
+        const val DRAG_VISUAL_DURATION_MS = 100L
     }
 }

@@ -23,6 +23,7 @@
     <dimen name="drawer_app_label_spacing">10px</dimen>
     <dimen name="drawer_app_label_height">56px</dimen>
     <dimen name="drawer_app_label_horizontal_padding">4px</dimen>
+    <dimen name="drawer_drag_layer_translation_z">24px</dimen>
 
     <dimen name="drawer_action_area_height">126px</dimen>
     <dimen name="drawer_action_height">@dimen/icar_control_height</dimen>

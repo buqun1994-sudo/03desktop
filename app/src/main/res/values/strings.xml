@@ -7,8 +7,8 @@
     <string name="overlay_notification_channel">03桌面服务</string>
     <string name="overlay_notification_title">03桌面正在运行</string>
     <string name="overlay_notification_message">右侧应用抽屉已准备就绪</string>
-    <string name="drawer_apps_title">第三方应用中心</string>
-    <string name="install_apk">从 APK 安装</string>
+    <string name="drawer_apps_title">应用管理</string>
+    <string name="install_apk">安装 APK</string>
     <string name="empty_app_catalog">没有可显示的第三方应用</string>
     <string name="uninstall_target">拖到这里卸载</string>
     <string name="app_unavailable">应用暂时无法打开</string>

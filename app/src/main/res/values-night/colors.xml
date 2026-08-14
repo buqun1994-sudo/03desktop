@@ -9,7 +9,7 @@
     <color name="drawer_surface_bottom">#FF0A0A0A</color>
     <color name="drawer_surface_elevated">#4D40435B</color>
     <color name="drawer_danger">#DD766D</color>
-    <color name="drawer_on_danger">#FFFFFFFF</color>
+    <color name="drawer_danger_active">#FF9A93</color>
     <color name="drawer_handle">#2BFFFFFF</color>
     <color name="install_row_divider">#1AFFFFFF</color>
     <color name="install_empty_icon">#80FFFFFF</color>

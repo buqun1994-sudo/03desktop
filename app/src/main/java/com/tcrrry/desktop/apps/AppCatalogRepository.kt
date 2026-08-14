@@ -3,12 +3,15 @@ package com.tcrrry.desktop.apps
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.PackageInfo
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
+import android.os.Build
 import com.tcrrry.desktop.model.AppEntry
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
+import java.security.MessageDigest
 
 class AppCatalogRepository(
     private val context: Context,
@@ -17,9 +20,15 @@ class AppCatalogRepository(
         val packageManager = context.packageManager
         val launcherIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
         val candidates = packageManager.queryIntentActivities(launcherIntent, 0)
+        val deviceProfile = OemDeviceProfile(
+            model = Build.MODEL,
+            device = Build.DEVICE,
+            sdkInt = Build.VERSION.SDK_INT,
+            fingerprint = Build.FINGERPRINT,
+        )
         AppCatalogFilter.toEntries(
             candidates = candidates.mapNotNull { resolveInfo ->
-                resolveInfo.toCandidate(packageManager)
+                resolveInfo.toCandidate(packageManager, deviceProfile)
             },
             selfPackageName = context.packageName,
             launcherComponentForPackage = { packageName ->
@@ -32,11 +41,23 @@ class AppCatalogRepository(
         )
     }
 
-    private fun ResolveInfo.toCandidate(packageManager: PackageManager): CatalogCandidate? {
+    private fun ResolveInfo.toCandidate(
+        packageManager: PackageManager,
+        deviceProfile: OemDeviceProfile,
+    ): CatalogCandidate? {
         val activityInfo = activityInfo ?: return null
         val applicationInfo = activityInfo.applicationInfo ?: return null
+        val requiresOemEvidence = OemIntegratedAppPolicy.requiresEvidence(
+            deviceProfile = deviceProfile,
+            packageName = activityInfo.packageName,
+        )
+        val packageInfoFlags = if (requiresOemEvidence) {
+            PackageManager.GET_PROVIDERS or PackageManager.GET_SIGNING_CERTIFICATES
+        } else {
+            0
+        }
         val packageInfo = try {
-            packageManager.getPackageInfo(activityInfo.packageName, 0)
+            packageManager.getPackageInfo(activityInfo.packageName, packageInfoFlags)
         } catch (_: PackageManager.NameNotFoundException) {
             return null
         }
@@ -49,10 +70,34 @@ class AppCatalogRepository(
             lastUpdateTime = packageInfo.lastUpdateTime,
             isSystemApp = applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM != 0,
             isUpdatedSystemApp = applicationInfo.flags and ApplicationInfo.FLAG_UPDATED_SYSTEM_APP != 0,
+            isOemIntegratedApp = requiresOemEvidence && OemIntegratedAppPolicy.shouldExclude(
+                deviceProfile = deviceProfile,
+                evidence = packageInfo.toOemAppEvidence(activityInfo.packageName),
+            ),
             applicationEnabled = applicationInfo.enabled,
             activityEnabled = activityInfo.enabled,
             priority = priority,
             preferredOrder = preferredOrder,
         )
+    }
+
+    private fun PackageInfo.toOemAppEvidence(packageName: String): OemAppEvidence = OemAppEvidence(
+        packageName = packageName,
+        signingCertificateSha256Digests = signingCertificateSha256Digests(),
+        providerClassNames = providers.orEmpty().mapNotNull { providerInfo -> providerInfo.name }.toSet(),
+    )
+
+    private fun PackageInfo.signingCertificateSha256Digests(): Set<String> {
+        val signingInfo = signingInfo ?: return emptySet()
+        val signatures = if (signingInfo.hasMultipleSigners()) {
+            signingInfo.apkContentsSigners
+        } else {
+            signingInfo.signingCertificateHistory
+        }
+        return signatures.orEmpty().map { signature ->
+            MessageDigest.getInstance("SHA-256")
+                .digest(signature.toByteArray())
+                .joinToString(separator = "") { byte -> "%02x".format(byte.toInt() and 0xff) }
+        }.toSet()
     }
 }

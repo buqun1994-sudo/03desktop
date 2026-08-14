@@ -33,6 +33,7 @@ class DrawerPanelController(
         @Suppress("InflateParams")
         val root = LayoutInflater.from(context).inflate(R.layout.overlay_drawer_panel, null, false)
         val grid = root.findViewById<RecyclerView>(R.id.app_grid)
+        val gridLayer = root.findViewById<View>(R.id.drawer_grid_layer)
         val emptyView = root.findViewById<TextView>(R.id.app_grid_empty)
         val loadingView = root.findViewById<View>(R.id.app_grid_loading)
         val actionSwitcher = root.findViewById<ViewAnimator>(R.id.drawer_action_switcher)
@@ -83,6 +84,7 @@ class DrawerPanelController(
         dragController = AppDragController(
             recyclerView = grid,
             adapter = nextAdapter,
+            dragLayer = gridLayer,
             actionSwitcher = actionSwitcher,
             uninstallTarget = uninstallTarget,
             onDragStateChanged = nextCoordinator::setDragging,

@@ -127,6 +127,9 @@ class AppGridAdapter(
         }
 
         fun recycle() {
+            itemView.animate().cancel()
+            itemView.scaleX = 1f
+            itemView.scaleY = 1f
             iconJob?.cancel()
             iconJob = null
             boundIconKey = null
