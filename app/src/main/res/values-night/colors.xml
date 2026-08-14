@@ -11,6 +11,7 @@
     <color name="drawer_danger">#DD766D</color>
     <color name="drawer_danger_active">#FF9A93</color>
     <color name="drawer_handle">#2BFFFFFF</color>
+    <color name="drawer_handle_active">#E6FFFFFF</color>
     <color name="install_row_divider">#1AFFFFFF</color>
     <color name="install_empty_icon">#80FFFFFF</color>
 </resources>

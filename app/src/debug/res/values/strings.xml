@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string name="navigation_demo_service_name">03桌面返回键测试</string>
+    <string name="navigation_demo_service_description">当前仅用于悬浮条全局返回测试，三键导航暂不使用。</string>
+    <string name="navigation_demo_back">返回</string>
+    <string name="navigation_demo_home">主页</string>
+    <string name="navigation_demo_recents">任务列表</string>
+    <string name="navigation_demo_unavailable">当前系统不支持这个导航操作</string>
+</resources>

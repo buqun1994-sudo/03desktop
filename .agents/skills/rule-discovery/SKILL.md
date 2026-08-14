@@ -49,7 +49,7 @@ description: 当新项目在 vibe coding 或工程施工中发现可复用规则
    - 验证方式。
    - 适用边界。
 6. 如果规则可以机械执行，补充脚本、hook、测试或 checklist 的后续任务。
-7. 更新后执行 `node scripts/check-template.mjs`。
+7. 当前仓库已初始化为具体项目：更新后执行 `node scripts/check-project-ready.mjs` 和本轮相关文件 `git diff --check`；只有实际回流 `/Users/q/Documents/Projects/NewProject` 时才在模板源执行 `check-template`。
 
 ## 6. 去专有化规则
 

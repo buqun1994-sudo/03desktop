@@ -54,8 +54,8 @@ AI 不能依赖“我记得之前遇到过”来判断重复。进入 L4 能力�
 | 创建、更新、拆分或审查项目级 skill | Skill 创建 | Skill | `.agents/skills/skill-authoring/SKILL.md` | 一次性事实或纯机械检查不创建 skill |
 | 适合所有新项目的能力、skill、规则、检查或文档槽位 | 模板能力发现 | Skill + 文档 | `.agents/skills/rule-discovery/SKILL.md`、`docs/architecture/rules/README.md` | 项目专有事实不回流模板 |
 | 通用能力已确认需要回流本地新项目模板 | 模板能力回流 | Skill | `.agents/skills/template-feedback/SKILL.md` | 未去专有化、模板源不可访问或模板源状态不明时不直接改模板 |
-| 收尾、提交、handoff、交付说明 | 任务收尾 | Skill | `.agents/skills/task-closeout/SKILL.md` | 不默认部署或上线 |
-| 文档、模板、目录底座检查 | 模板快检 | Script | `node scripts/check-template.mjs` | 只读查询不默认执行 |
+| 明确要求提交、handoff、归档、发布准备或正式收尾 | 任务收尾 | Skill | `.agents/skills/task-closeout/SKILL.md` | 普通功能交付、状态汇报、手测交接和单纯摘要不触发 |
+| 本项目总纲或验证入口变化 | 项目就绪检查 | Script | `node scripts/check-project-ready.mjs` | 普通文档、只读查询和纯 Git 不默认执行 |
 | 项目初始化完成度 | 项目就绪检查 | Script | `node scripts/check-project-ready.mjs` | 模板源开发时不要求通过 |
 | skill 结构、frontmatter、openai.yaml 元数据 | Skill 基础快检 | Script | `node scripts/check-skills.mjs` | 不替代人工审查 skill 内容质量 |
 | 多 Agent 协作 | 多 Agent 协议 | 文档 | `docs/architecture/multi-agent-workflow.md` | 生产、密钥、数据、收尾提交不并行 |
@@ -67,7 +67,7 @@ AI 不能依赖“我记得之前遇到过”来判断重复。进入 L4 能力�
 1. 新增能力前先检查是否已有同类能力，避免第二套真值。
 2. 每个 skill 只负责一个工作流。
 3. 每个 script 只负责可复跑的机械动作。
-4. 能力池变更后执行模板快检和本轮相关文件 `git diff --check`。
+4. 能力池变更后执行项目就绪检查和本轮相关文件 `git diff --check`；只有模板源改动才执行模板快检。
 5. 若能力池条目改变任务路由，同步更新 `AGENTS.md` 或 `docs/README.md`。
 6. 能力索引和 blueprints 只提供候选能力；未经过 `project-bootstrap` 写入项目事实前，不得视为已实现能力。
 7. 发现模板级能力候选时，先在当前项目记录候选和证据；确认跨项目通用后，通过 `template-feedback` 回流到本地模板源 `/Users/q/Documents/Projects/NewProject`，并执行模板快检。

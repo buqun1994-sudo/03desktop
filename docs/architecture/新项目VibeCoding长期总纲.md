@@ -6,6 +6,7 @@
 2. 本文不替代具体项目需求；真实产品事实应写入 `docs/product/产品需求基线.md` 和 `docs/architecture/项目长期总纲.md`。
 3. 本文只保留跨项目通用原则，不预设任何公司、云平台、支付渠道、账号体系、发布平台或官网主链。
 4. 目标是让后续项目的 prompt 越来越轻，项目 harness 越来越稳，用户只在真正需要判断的地方介入。
+5. 本项目已经完成初始化；本文只保留模板背景参考，不定义 `03桌面` 当前施工和验证节奏。当前口径以根 `AGENTS.md`、`docs/architecture/rules/ai-collaboration.md` 和 `docs/testing/验证矩阵.md` 为准。
 
 ## 2. 核心原则
 

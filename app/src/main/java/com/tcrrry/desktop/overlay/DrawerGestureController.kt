@@ -21,6 +21,7 @@ class DrawerGestureController(
         fun onHorizontalGestureStarted(origin: GestureOrigin)
         fun onDistanceChanged(openDistancePx: Int)
         fun onSettleRequested(dock: DrawerDock)
+        fun onClosedTriggerTapped()
     }
 
     private enum class Direction {
@@ -109,9 +110,15 @@ class DrawerGestureController(
                 listener.onSettleRequested(destination)
             }
 
-            Direction.PENDING,
-            Direction.BLOCKED,
-            -> if (interruptedAnimation) listener.onSettleRequested(startDock)
+            Direction.PENDING -> {
+                if (!cancelled && !interruptedAnimation && startDock == DrawerDock.CLOSED) {
+                    listener.onClosedTriggerTapped()
+                } else if (interruptedAnimation) {
+                    listener.onSettleRequested(startDock)
+                }
+            }
+
+            Direction.BLOCKED -> if (interruptedAnimation) listener.onSettleRequested(startDock)
         }
         direction = Direction.PENDING
         interruptedAnimation = false

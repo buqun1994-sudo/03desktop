@@ -10,6 +10,7 @@ import android.view.View
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
+import com.tcrrry.desktop.R
 import com.tcrrry.desktop.model.DrawerDock
 import com.tcrrry.desktop.model.GestureOrigin
 import com.tcrrry.desktop.model.DrawerMotion
@@ -19,6 +20,7 @@ class DrawerWindowController(
     private val panelFactory: () -> View,
     private val onPanelRemoved: () -> Unit,
     private val onDesktopSurfaceOccupancyChanged: (Boolean) -> Unit,
+    private val onClosedTriggerBackRequested: () -> Boolean,
     private val onWindowFailure: () -> Unit,
 ) : DrawerGestureController.Listener {
     private val windowManager = context.getSystemService(WindowManager::class.java)
@@ -119,6 +121,10 @@ class DrawerWindowController(
 
     override fun onSettleRequested(dock: DrawerDock) {
         animateTo(dock)
+    }
+
+    override fun onClosedTriggerTapped() {
+        triggerView.performClick()
     }
 
     private fun animateTo(destination: DrawerDock) {
@@ -261,6 +267,7 @@ class DrawerWindowController(
     private fun removeTrigger(allowFailureCallback: Boolean = true) {
         if (!triggerAttached) return
         triggerAttached = false
+        triggerHandleView.removeCallbacks(resetBackClickFeedback)
         safely(allowFailureCallback) { windowManager.removeViewImmediate(triggerView) }
     }
 
@@ -311,11 +318,19 @@ class DrawerWindowController(
                     topMargin = DrawerGeometry.HANDLE_TOP_PX
                 },
             )
-            setOnTouchListener { view, event: MotionEvent ->
-                if (event.actionMasked == MotionEvent.ACTION_UP) view.performClick()
+            setOnClickListener {
+                if (onClosedTriggerBackRequested()) playBackClickFeedback()
+            }
+            setOnTouchListener { _, event: MotionEvent ->
                 if (pendingAfterClose != null) true else gestureController.onTouch(event)
             }
         }
+    }
+
+    private fun playBackClickFeedback() {
+        triggerHandleView.removeCallbacks(resetBackClickFeedback)
+        triggerHandleView.background = context.getDrawable(R.drawable.bg_drawer_handle_active)
+        triggerHandleView.postDelayed(resetBackClickFeedback, BACK_FEEDBACK_DURATION_MS)
     }
 
     private fun createTriggerLayoutParams() = WindowManager.LayoutParams(
@@ -345,7 +360,7 @@ class DrawerWindowController(
     private fun overlayWindowType(): Int = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY
 
     private fun refreshHandleBackground(view: View = triggerHandleView) {
-        view.background = context.getDrawable(com.tcrrry.desktop.R.drawable.bg_drawer_handle)
+        view.background = context.getDrawable(R.drawable.bg_drawer_handle)
     }
 
     private fun triggerFlags(): Int =
@@ -401,6 +416,12 @@ class DrawerWindowController(
         val action = pendingAfterClose
         pendingAfterClose = null
         action?.invoke()
+    }
+
+    private val resetBackClickFeedback = Runnable { refreshHandleBackground() }
+
+    private companion object {
+        const val BACK_FEEDBACK_DURATION_MS = 180L
     }
 
     private enum class PanelWindowState {

@@ -1,4 +1,4 @@
 interface:
   display_name: "任务收尾"
-  short_description: "完成新项目任务收尾中的验证进度记录提交和交付说明闭环"
-  default_prompt: "Use $task-closeout to finish validation, progress updates, git status review, and delivery notes."
+  short_description: "处理明确要求的提交、交接、归档或正式收尾"
+  default_prompt: "Use $task-closeout only for an explicitly requested commit, handoff, archive, release preparation, or formal closeout."

@@ -32,4 +32,4 @@
 1. 任务开始时按任务类型读取相关分类。
 2. 施工中发现重复判断、返工点或底层框架规则时，使用 `rule-discovery` skill。
 3. 交付前检查是否需要把新规则沉淀到本目录，或使用 `template-feedback` 回流本地模板源。
-4. 更新规则后执行 `node scripts/check-template.mjs`。
+4. 当前项目更新规则后执行 `node scripts/check-project-ready.mjs` 和本轮相关文件 `git diff --check`；只有模板回流任务才在模板源执行 `check-template`。

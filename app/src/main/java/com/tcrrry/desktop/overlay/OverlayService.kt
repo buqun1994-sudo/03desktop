@@ -13,6 +13,7 @@ import android.provider.Settings
 import androidx.core.app.NotificationCompat
 import com.tcrrry.desktop.R
 import com.tcrrry.desktop.apps.PackageChangeMonitor
+import com.tcrrry.desktop.system.GlobalBackActionGateway
 
 class OverlayService : Service() {
     private var drawerWindowController: DrawerWindowController? = null
@@ -62,6 +63,7 @@ class OverlayService : Service() {
                     onDesktopSurfaceOccupancyChanged = { occupied ->
                         surfaceOccupancyLeaseClient?.setOccupied(occupied)
                     },
+                    onClosedTriggerBackRequested = GlobalBackActionGateway::performBack,
                     onWindowFailure = { releaseAndStop() },
                 ).also { it.showClosedTrigger() }
             }
@@ -114,7 +116,7 @@ class OverlayService : Service() {
             },
         )
         val notification: Notification = NotificationCompat.Builder(this, NOTIFICATION_CHANNEL_ID)
-            .setSmallIcon(R.drawable.ic_launcher)
+            .setSmallIcon(R.drawable.ic_notification)
             .setContentTitle(getString(R.string.overlay_notification_title))
             .setContentText(getString(R.string.overlay_notification_message))
             .setOngoing(true)

@@ -16,6 +16,7 @@
 | Android 工具链、本机配置、构建与 ADB | `docs/operations/开发环境.md` |
 | 包名、签名与升级身份 | `docs/decisions/0001-Android技术栈与应用身份.md` |
 | 隐藏自身及自卸载边界 | `docs/decisions/0002-隐藏自身及自卸载边界.md` |
+| 原车 UI 证据与抽屉视觉 token | `docs/architecture/rules/design.md` + `03lyrics/docs/architecture/iCAR车机UI设计规范.md`（只读来源） |
 | 车机系统能力探测结果 | `docs/testing/车机能力验证记录.md` |
 | 界面语言、locale、fallback 与文案资源 | `docs/architecture/多语言与文案主链.md` |
 | 新项目工作法、Vibe Coding、工程化升级 | `docs/architecture/新项目VibeCoding长期总纲.md` |
@@ -54,4 +55,4 @@
 2. 如果内容适合所有新项目默认具备，必须去专有化后回流到本地模板源 `/Users/q/Documents/Projects/NewProject`；复制后的项目只记录候选，不把自己当作模板源。
 3. 如果规则只对某个项目成立，写入该项目自己的文档，不反向污染模板。
 4. 如果规则已经可以机械检查，优先补脚本、hook、测试或 checklist，不只停留在自然语言。
-5. 本项目已经完成初始化，V1 架构方案与决策 0002 已确认；业务施工必须按 `docs/plans/V1架构施工方案.md` 的物理边界和内部技术检查点验证闭环推进，不得把计划中的未来能力写成已实现事实。
+5. 本项目已经完成初始化，V1 架构方案与决策 0002 已确认；业务施工遵守方案的架构与权限边界，但按根 `AGENTS.md` 的小切片、用户主验收节奏推进，不受历史内部检查点约束。
