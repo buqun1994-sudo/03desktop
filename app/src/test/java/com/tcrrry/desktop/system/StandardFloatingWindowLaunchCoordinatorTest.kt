@@ -36,6 +36,19 @@ class StandardFloatingWindowLaunchCoordinatorTest {
     }
 
     @Test
+    fun `standard target with only ADAS card launches directly`() {
+        val gateway = FakeGateway(TargetKind.STANDARD_FLOATING_WINDOW, windowMode = 1)
+        val coordinator = StandardFloatingWindowLaunchCoordinator(gateway) { error("Unexpected $it") }
+
+        assertTrue(coordinator.launch(TARGET))
+
+        assertEquals(0, gateway.homeStarts)
+        assertEquals(listOf(TARGET), gateway.targetStarts)
+        assertEquals(0, gateway.observationStarts)
+        assertFalse(coordinator.hasPendingLaunch())
+    }
+
+    @Test
     fun `standard target in mode two waits for HOME transition before one launch`() {
         val gateway = FakeGateway(TargetKind.STANDARD_FLOATING_WINDOW, windowMode = 2)
         val coordinator = StandardFloatingWindowLaunchCoordinator(gateway) { error("Unexpected $it") }
@@ -54,6 +67,50 @@ class StandardFloatingWindowLaunchCoordinatorTest {
         assertFalse(coordinator.hasPendingLaunch())
         assertEquals(1, gateway.observationCancels)
         assertEquals(1, gateway.timeoutCancels)
+    }
+
+    @Test
+    fun `combined ADAS and standard window waits until only ADAS remains`() {
+        val gateway = FakeGateway(TargetKind.STANDARD_FLOATING_WINDOW, windowMode = 3)
+        val coordinator = StandardFloatingWindowLaunchCoordinator(gateway) { error("Unexpected $it") }
+
+        assertTrue(coordinator.launch(TARGET))
+        assertEquals(1, gateway.homeStarts)
+        assertTrue(coordinator.hasPendingLaunch())
+        assertTrue(gateway.targetStarts.isEmpty())
+
+        gateway.notifyWindowModeChanged()
+        assertTrue(coordinator.hasPendingLaunch())
+        assertTrue(gateway.targetStarts.isEmpty())
+
+        gateway.windowMode = 1
+        gateway.notifyWindowModeChanged()
+        gateway.notifyWindowModeChanged()
+
+        assertEquals(listOf(TARGET), gateway.targetStarts)
+        assertEquals(1, gateway.observationCancels)
+        assertEquals(1, gateway.timeoutCancels)
+        assertFalse(coordinator.hasPendingLaunch())
+    }
+
+    @Test
+    fun `ADAS appearing while HOME clears a standard window keeps waiting`() {
+        val gateway = FakeGateway(TargetKind.STANDARD_FLOATING_WINDOW, windowMode = 2)
+        val coordinator = StandardFloatingWindowLaunchCoordinator(gateway) { error("Unexpected $it") }
+
+        assertTrue(coordinator.launch(TARGET))
+
+        gateway.windowMode = 3
+        gateway.notifyWindowModeChanged()
+
+        assertTrue(coordinator.hasPendingLaunch())
+        assertTrue(gateway.targetStarts.isEmpty())
+
+        gateway.windowMode = 1
+        gateway.notifyWindowModeChanged()
+
+        assertEquals(listOf(TARGET), gateway.targetStarts)
+        assertFalse(coordinator.hasPendingLaunch())
     }
 
     @Test
@@ -202,8 +259,8 @@ class StandardFloatingWindowLaunchCoordinatorTest {
     @Test
     fun `unknown or unreadable mode fails conservatively without HOME`() {
         listOf(
-            WindowModeRead.Value(1),
-            WindowModeRead.Value(3),
+            WindowModeRead.Value(-1),
+            WindowModeRead.Value(4),
             WindowModeRead.Unavailable,
         ).forEach { mode ->
             val gateway = FakeGateway(TargetKind.STANDARD_FLOATING_WINDOW, windowMode = 0).apply {
@@ -255,7 +312,7 @@ class StandardFloatingWindowLaunchCoordinatorTest {
         val coordinator = StandardFloatingWindowLaunchCoordinator(gateway, failures::add)
         assertTrue(coordinator.launch(TARGET))
 
-        gateway.windowMode = 3
+        gateway.windowMode = 4
         gateway.notifyWindowModeChanged()
 
         assertEquals(listOf(Failure.WINDOW_STATE_UNAVAILABLE), failures)

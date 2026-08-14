@@ -46,6 +46,12 @@ class StandardFloatingWindowLaunchCoordinator(
         var result: Boolean? = null,
     )
 
+    private enum class StandardWindowOccupancy {
+        CLEAR,
+        OCCUPIED,
+        UNKNOWN,
+    }
+
     private var pendingLaunch: PendingLaunch? = null
     private var observation: WindowModeObservation? = null
     private var timeout: Cancellable? = null
@@ -85,10 +91,13 @@ class StandardFloatingWindowLaunchCoordinator(
     ): Boolean =
         when (val mode = gateway.readWindowMode()) {
             WindowModeRead.Unavailable -> fail(Failure.WINDOW_STATE_UNAVAILABLE)
-            is WindowModeRead.Value -> when (mode.value) {
-                WINDOW_MODE_NONE -> startTarget(targetFailure, startTarget)
-                WINDOW_MODE_STANDARD_FLOATING_WINDOW -> transitionThroughHome(targetFailure, startTarget)
-                else -> fail(Failure.WINDOW_STATE_UNAVAILABLE)
+            is WindowModeRead.Value -> when (standardWindowOccupancy(mode.value)) {
+                StandardWindowOccupancy.CLEAR -> startTarget(targetFailure, startTarget)
+                StandardWindowOccupancy.OCCUPIED -> {
+                    transitionThroughHome(targetFailure, startTarget)
+                }
+
+                StandardWindowOccupancy.UNKNOWN -> fail(Failure.WINDOW_STATE_UNAVAILABLE)
             }
         }
 
@@ -127,17 +136,32 @@ class StandardFloatingWindowLaunchCoordinator(
         if (pendingLaunch !== request) return request.result ?: false
         return when (val mode = gateway.readWindowMode()) {
             WindowModeRead.Unavailable -> failPending(request, Failure.WINDOW_STATE_UNAVAILABLE)
-            is WindowModeRead.Value -> when (mode.value) {
-                WINDOW_MODE_NONE -> {
+            is WindowModeRead.Value -> when (standardWindowOccupancy(mode.value)) {
+                StandardWindowOccupancy.CLEAR -> {
                     clearPending(request)
                     startTarget(request.targetFailure, request.startTarget).also { request.result = it }
                 }
 
-                WINDOW_MODE_STANDARD_FLOATING_WINDOW -> true
-                else -> failPending(request, Failure.WINDOW_STATE_UNAVAILABLE)
+                StandardWindowOccupancy.OCCUPIED -> true
+                StandardWindowOccupancy.UNKNOWN -> {
+                    failPending(request, Failure.WINDOW_STATE_UNAVAILABLE)
+                }
             }
         }
     }
+
+    private fun standardWindowOccupancy(windowMode: Int): StandardWindowOccupancy =
+        when (windowMode) {
+            WINDOW_MODE_NONE,
+            WINDOW_MODE_ADAS_CARD,
+            -> StandardWindowOccupancy.CLEAR
+
+            WINDOW_MODE_STANDARD_FLOATING_WINDOW,
+            WINDOW_MODE_ADAS_CARD_AND_STANDARD_FLOATING_WINDOW,
+            -> StandardWindowOccupancy.OCCUPIED
+
+            else -> StandardWindowOccupancy.UNKNOWN
+        }
 
     private fun startTarget(targetFailure: Failure, startTarget: () -> Boolean): Boolean {
         if (startTarget()) return true
@@ -174,6 +198,8 @@ class StandardFloatingWindowLaunchCoordinator(
         const val TRANSITION_TIMEOUT_MS = 3_000L
 
         private const val WINDOW_MODE_NONE = 0
+        private const val WINDOW_MODE_ADAS_CARD = 1
         private const val WINDOW_MODE_STANDARD_FLOATING_WINDOW = 2
+        private const val WINDOW_MODE_ADAS_CARD_AND_STANDARD_FLOATING_WINDOW = 3
     }
 }
