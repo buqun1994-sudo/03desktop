@@ -33,7 +33,6 @@
     <dimen name="drawer_action_icon_spacing">@dimen/icar_spacing_12</dimen>
 
     <dimen name="drawer_panel_radius">@dimen/icar_control_radius</dimen>
-    <dimen name="drawer_control_radius">@dimen/icar_control_radius</dimen>
     <dimen name="drawer_title_text_size">38sp</dimen>
     <dimen name="drawer_app_label_text_size">24sp</dimen>
 

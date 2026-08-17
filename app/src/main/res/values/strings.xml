@@ -1,33 +1,32 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
     <string name="app_name">03桌面</string>
-    <string name="overlay_permission_title">需要显示权限</string>
-    <string name="overlay_permission_message">允许后，右侧应用抽屉会在车机上保持可用。</string>
-    <string name="overlay_permission_action">打开系统设置</string>
     <string name="overlay_notification_channel">03桌面服务</string>
     <string name="overlay_notification_title">03桌面正在运行</string>
     <string name="overlay_notification_message">右侧应用抽屉已准备就绪</string>
+    <string name="global_back_service_name">03桌面全局返回</string>
+    <string name="global_back_service_description">点击03桌面右侧触发条时执行一次系统返回，不读取屏幕内容或输入信息。</string>
     <string name="drawer_apps_title">应用管理</string>
     <string name="install_apk">安装 APK</string>
     <string name="empty_app_catalog">没有可显示的第三方应用</string>
     <string name="uninstall_target">拖到这里卸载</string>
     <string name="app_unavailable">应用暂时无法打开</string>
+    <string name="file_manager_unavailable">增强文件管理器未安装或版本不支持</string>
     <string name="standard_floating_window_switch_unavailable">暂时无法切换浮窗，请关闭当前窗口后重试</string>
     <string name="system_action_unavailable">当前系统无法完成此操作</string>
     <string name="apk_install_title">安装 APK</string>
     <string name="apk_scan_loading">正在查找 APK</string>
     <string name="apk_scan_empty">没有找到 APK 文件</string>
     <string name="apk_scan_count">找到 %1$d 个 APK</string>
-    <string name="apk_storage_permission">允许读取下载目录后可查找 APK</string>
-    <string name="apk_storage_permission_action">允许读取</string>
-    <string name="apk_external_storage">选择外部存储</string>
-    <string name="apk_no_external_storage">没有可授权的外部存储</string>
-    <string name="apk_scan_error">无法读取部分存储内容</string>
+    <string name="apk_storage_permission">安装授权未完成</string>
+    <string name="apk_external_storage">打开 U 盘</string>
+    <string name="apk_scan_error">无法读取下载目录</string>
     <string name="apk_meta">%1$s | %2$s</string>
     <string name="apk_empty_title">没有可安装的 APK</string>
-    <string name="apk_empty_message">可选择外部存储，或将 APK 放入下载目录。</string>
-    <string name="apk_permission_title">需要读取下载目录</string>
-    <string name="apk_permission_message">允许后即可查找可安装的 APK 文件。</string>
+    <string name="apk_empty_message">请将 APK 放入下载目录。</string>
+    <string name="apk_permission_title">无法读取下载目录</string>
+    <string name="apk_permission_message">请通过手机安装工具重新授权03桌面。</string>
+    <string name="apk_install_permission_missing">安装授权未完成，请通过手机安装工具重新授权03桌面</string>
     <string name="apk_error_title">暂时无法读取 APK</string>
-    <string name="apk_error_message">请检查存储后重新进入此页面。</string>
+    <string name="apk_error_message">请检查下载目录后重新进入此页面。</string>
 </resources>

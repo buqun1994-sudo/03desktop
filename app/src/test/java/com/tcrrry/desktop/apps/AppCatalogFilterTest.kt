@@ -1,5 +1,6 @@
 package com.tcrrry.desktop.apps
 
+import com.tcrrry.desktop.system.FileManagerContract
 import org.junit.Assert.assertEquals
 import org.junit.Assert.assertFalse
 import org.junit.Assert.assertTrue
@@ -7,12 +8,14 @@ import org.junit.Test
 
 class AppCatalogFilterTest {
     @Test
-    fun `filters system disabled self but keeps lyric app as normal third party`() {
+    fun `filters ineligible apps while keeping lyrics and optional file manager normal`() {
         val lyricsPackage = "com.tcrrry.desktoplyrics"
+        val fileManagerPackage = FileManagerContract.PACKAGE_NAME
         val entries = AppCatalogFilter.toEntries(
             candidates = listOf(
                 candidate(packageName = "com.tcrrry.desktop", className = "SelfActivity"),
                 candidate(packageName = lyricsPackage, className = "LyricsActivity"),
+                candidate(packageName = fileManagerPackage, className = "FileManagerActivity"),
                 candidate(packageName = "system.entry", className = "SystemActivity", isSystemApp = true),
                 candidate(packageName = "updated.system", className = "UpdatedSystemActivity", isUpdatedSystemApp = true),
                 candidate(packageName = "oem.integrated", className = "OemActivity", isOemIntegratedApp = true),
@@ -26,10 +29,12 @@ class AppCatalogFilterTest {
             densityDpi = 160,
         )
 
-        assertEquals(listOf(lyricsPackage), entries.map { it.packageName })
-        assertFalse(entries.single().isSelf)
-        assertTrue(entries.single().canRequestUninstall)
-        assertTrue(entries.single().iconKey.endsWith(":96:160"))
+        val entriesByPackage = entries.associateBy { it.packageName }
+        assertEquals(setOf(lyricsPackage, fileManagerPackage), entriesByPackage.keys)
+        assertFalse(requireNotNull(entriesByPackage[lyricsPackage]).isSelf)
+        assertTrue(requireNotNull(entriesByPackage[lyricsPackage]).canRequestUninstall)
+        assertTrue(requireNotNull(entriesByPackage[fileManagerPackage]).canRequestUninstall)
+        assertTrue(requireNotNull(entriesByPackage[fileManagerPackage]).iconKey.endsWith(":96:160"))
     }
 
     @Test

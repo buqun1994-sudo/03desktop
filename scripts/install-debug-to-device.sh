@@ -55,7 +55,13 @@ fi
 
 echo "目标车机：$DEVICE_MODEL / Android SDK $DEVICE_SDK / 1920x1080"
 echo "安装包：$DEBUG_APK"
-"$ANDROID_ADB_BIN" install -r "$DEBUG_APK"
+"$ANDROID_ADB_BIN" install -r -g "$DEBUG_APK"
+"$ANDROID_ADB_BIN" shell appops set "$EXPECTED_PACKAGE" REQUEST_INSTALL_PACKAGES allow
+INSTALL_APP_OP="$($ANDROID_ADB_BIN shell appops get "$EXPECTED_PACKAGE" REQUEST_INSTALL_PACKAGES | tr -d '\r')"
+if [[ "$INSTALL_APP_OP" != *"REQUEST_INSTALL_PACKAGES: allow"* ]]; then
+    echo "Debug APK 已安装，但未知来源安装授权未生效。" >&2
+    exit 1
+fi
 "$ANDROID_ADB_BIN" shell am start -n "$EXPECTED_COMPONENT"
 
 PROCESS_ID=""

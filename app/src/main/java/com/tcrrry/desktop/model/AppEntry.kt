@@ -5,6 +5,10 @@ data class AppIdentity(
     val firstInstallTime: Long,
 )
 
+object AppManagementPolicy {
+    fun canRequestUninstall(isSelf: Boolean): Boolean = !isSelf
+}
+
 data class AppEntry(
     val packageName: String,
     val componentName: String,
@@ -18,5 +22,5 @@ data class AppEntry(
         get() = AppIdentity(packageName, firstInstallTime)
 
     val canRequestUninstall: Boolean
-        get() = !isSelf
+        get() = AppManagementPolicy.canRequestUninstall(isSelf)
 }

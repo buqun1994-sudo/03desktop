@@ -120,11 +120,16 @@ class AppDragController(
             val position = viewHolder.bindingAdapterPosition
             if (position == RecyclerView.NO_POSITION) return
             dragSession = DragSession(adapter.snapshot())
-            draggedEntry = adapter.snapshot().getOrNull(position)
+            val entry = adapter.snapshot().getOrNull(position)
+            draggedEntry = entry
             draggedItemView = viewHolder.itemView
             gestureCancelled = false
             uninstallHit = false
-            actionSwitcher.displayedChild = UNINSTALL_ACTION_INDEX
+            actionSwitcher.displayedChild = if (entry?.canRequestUninstall == true) {
+                UNINSTALL_ACTION_INDEX
+            } else {
+                INSTALL_ACTION_INDEX
+            }
             updateDragPresentation(viewHolder.itemView, dragging = true, animate = true)
             updateUninstallPresentation(activated = false, animate = false)
             onDragStateChanged(true)

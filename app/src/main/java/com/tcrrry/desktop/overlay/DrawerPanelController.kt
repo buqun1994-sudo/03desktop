@@ -26,6 +26,7 @@ class DrawerPanelController(
     private var adapter: AppGridAdapter? = null
     private var iconCache: IconCache? = null
     private var actionLauncher: SystemActionLauncher? = null
+    private var installApkAction: View? = null
     private var panelView: View? = null
     private var closingForAction = false
 
@@ -37,10 +38,12 @@ class DrawerPanelController(
         val emptyView = root.findViewById<TextView>(R.id.app_grid_empty)
         val loadingView = root.findViewById<View>(R.id.app_grid_loading)
         val actionSwitcher = root.findViewById<ViewAnimator>(R.id.drawer_action_switcher)
+        val installApkAction = root.findViewById<View>(R.id.install_apk_button)
         val uninstallTarget = root.findViewById<View>(R.id.uninstall_target)
         val actionLauncher = SystemActionLauncher(context)
         this.actionLauncher?.release()
         this.actionLauncher = actionLauncher
+        this.installApkAction = installApkAction
         val iconCache = IconCache(context)
         this.iconCache = iconCache
         emptyView.visibility = View.VISIBLE
@@ -95,8 +98,8 @@ class DrawerPanelController(
                 }
             },
         )
-        root.findViewById<View>(R.id.install_apk_button).setOnClickListener {
-            runAfterClose { actionLauncher.launchApkInstall() }
+        installApkAction.setOnClickListener {
+            runAfterClose { actionLauncher.launchApkInstaller() }
         }
         nextCoordinator.start()
         panelView = root
@@ -106,6 +109,7 @@ class DrawerPanelController(
     fun onPanelRemoved() {
         actionLauncher?.release()
         actionLauncher = null
+        installApkAction = null
         dragController?.detach()
         dragController = null
         adapter?.release()

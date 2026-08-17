@@ -13,6 +13,7 @@
 | 复制模板后的第一轮初始化 | `.agents/skills/project-bootstrap/SKILL.md` |
 | 项目定位、系统边界、主链、不变量 | `docs/architecture/项目长期总纲.md` |
 | V1 抽屉、应用管理、权限、状态流和物理施工边界 | `docs/plans/V1架构施工方案.md` |
+| 未来新增车型、原车 UI 与事件行为适配顺序 | `docs/plans/多车型适配工作顺序.md` |
 | Android 工具链、本机配置、构建与 ADB | `docs/operations/开发环境.md` |
 | 包名、签名与升级身份 | `docs/decisions/0001-Android技术栈与应用身份.md` |
 | 隐藏自身及自卸载边界 | `docs/decisions/0002-隐藏自身及自卸载边界.md` |

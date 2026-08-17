@@ -44,4 +44,5 @@
     <style name="InstallText.EmptyTitle" parent="IcarText.Title">
         <item name="android:gravity">center</item>
     </style>
+
 </resources>

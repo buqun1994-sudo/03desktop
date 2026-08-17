@@ -28,11 +28,10 @@
                 android:text="@string/apk_install_title" />
 
             <TextView
-                android:id="@+id/request_external_tree"
+                android:id="@+id/open_external_storage"
                 style="@style/IcarText.Action"
                 android:layout_width="wrap_content"
                 android:layout_height="match_parent"
-                android:minWidth="@dimen/install_header_action_min_width"
                 android:background="@drawable/bg_install_action"
                 android:clickable="true"
                 android:contentDescription="@string/apk_external_storage"
@@ -40,9 +39,11 @@
                 android:drawablePadding="@dimen/icar_spacing_12"
                 android:focusable="true"
                 android:gravity="center"
+                android:minWidth="@dimen/install_header_action_min_width"
                 android:paddingStart="@dimen/icar_spacing_24"
                 android:paddingEnd="@dimen/icar_spacing_24"
-                android:text="@string/apk_external_storage" />
+                android:text="@string/apk_external_storage"
+                android:visibility="gone" />
         </LinearLayout>
 
         <LinearLayout
@@ -68,19 +69,6 @@
                 android:layout_weight="1"
                 android:maxLines="1" />
 
-            <TextView
-                android:id="@+id/request_download_permission"
-                style="@style/IcarText.Action"
-                android:layout_width="wrap_content"
-                android:layout_height="match_parent"
-                android:background="@drawable/bg_install_action"
-                android:clickable="true"
-                android:focusable="true"
-                android:gravity="center"
-                android:paddingStart="@dimen/icar_spacing_24"
-                android:paddingEnd="@dimen/icar_spacing_24"
-                android:text="@string/apk_storage_permission_action"
-                android:visibility="gone" />
         </LinearLayout>
 
         <FrameLayout

@@ -3,12 +3,14 @@ package com.tcrrry.desktop.apps
 import android.content.ComponentName
 import android.content.Context
 import android.content.Intent
+import android.content.pm.ActivityInfo
 import android.content.pm.PackageInfo
 import android.content.pm.ApplicationInfo
 import android.content.pm.PackageManager
 import android.content.pm.ResolveInfo
 import android.os.Build
 import com.tcrrry.desktop.model.AppEntry
+import com.tcrrry.desktop.system.FileManagerContract
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import java.security.MessageDigest
@@ -19,21 +21,31 @@ class AppCatalogRepository(
     suspend fun load(): List<AppEntry> = withContext(Dispatchers.IO) {
         val packageManager = context.packageManager
         val launcherIntent = Intent(Intent.ACTION_MAIN).addCategory(Intent.CATEGORY_LAUNCHER)
-        val candidates = packageManager.queryIntentActivities(launcherIntent, 0)
         val deviceProfile = OemDeviceProfile(
             model = Build.MODEL,
             device = Build.DEVICE,
             sdkInt = Build.VERSION.SDK_INT,
             fingerprint = Build.FINGERPRINT,
         )
-        AppCatalogFilter.toEntries(
-            candidates = candidates.mapNotNull { resolveInfo ->
+        val candidates = packageManager.queryIntentActivities(launcherIntent, 0)
+            .mapNotNull { resolveInfo ->
                 resolveInfo.toCandidate(packageManager, deviceProfile)
-            },
+            }
+            .toMutableList()
+        fileManagerCandidate(packageManager, deviceProfile)?.let(candidates::add)
+        AppCatalogFilter.toEntries(
+            candidates = candidates,
             selfPackageName = context.packageName,
             launcherComponentForPackage = { packageName ->
-                packageManager.getLaunchIntentForPackage(packageName)?.component?.let { component ->
-                    canonicalComponentName(component.packageName, component.className)
+                if (packageName == FileManagerContract.PACKAGE_NAME) {
+                    canonicalComponentName(
+                        FileManagerContract.PACKAGE_NAME,
+                        FileManagerContract.MAIN_ACTIVITY_NAME,
+                    )
+                } else {
+                    packageManager.getLaunchIntentForPackage(packageName)?.component?.let { component ->
+                        canonicalComponentName(component.packageName, component.className)
+                    }
                 }
             },
             iconSizePx = context.resources.getDimensionPixelSize(com.tcrrry.desktop.R.dimen.drawer_app_icon_size),
@@ -46,6 +58,46 @@ class AppCatalogRepository(
         deviceProfile: OemDeviceProfile,
     ): CatalogCandidate? {
         val activityInfo = activityInfo ?: return null
+        return activityInfo.toCandidate(
+            packageManager = packageManager,
+            deviceProfile = deviceProfile,
+            label = loadLabel(packageManager).toString(),
+            priority = priority,
+            preferredOrder = preferredOrder,
+        )
+    }
+
+    private fun fileManagerCandidate(
+        packageManager: PackageManager,
+        deviceProfile: OemDeviceProfile,
+    ): CatalogCandidate? {
+        val activityInfo = try {
+            packageManager.getActivityInfo(FileManagerContract.mainComponent, 0)
+        } catch (_: PackageManager.NameNotFoundException) {
+            return null
+        } catch (_: SecurityException) {
+            return null
+        } catch (_: RuntimeException) {
+            return null
+        }
+        if (!activityInfo.exported) return null
+        return activityInfo.toCandidate(
+            packageManager = packageManager,
+            deviceProfile = deviceProfile,
+            label = activityInfo.applicationInfo.loadLabel(packageManager).toString(),
+            priority = 0,
+            preferredOrder = 0,
+        )
+    }
+
+    private fun ActivityInfo.toCandidate(
+        packageManager: PackageManager,
+        deviceProfile: OemDeviceProfile,
+        label: String,
+        priority: Int,
+        preferredOrder: Int,
+    ): CatalogCandidate? {
+        val activityInfo = this
         val applicationInfo = activityInfo.applicationInfo ?: return null
         val requiresOemEvidence = OemIntegratedAppPolicy.requiresEvidence(
             deviceProfile = deviceProfile,
@@ -64,7 +116,7 @@ class AppCatalogRepository(
         return CatalogCandidate(
             packageName = activityInfo.packageName,
             className = activityInfo.name,
-            label = loadLabel(packageManager).toString(),
+            label = label,
             applicationLabel = applicationInfo.loadLabel(packageManager).toString(),
             firstInstallTime = packageInfo.firstInstallTime,
             lastUpdateTime = packageInfo.lastUpdateTime,

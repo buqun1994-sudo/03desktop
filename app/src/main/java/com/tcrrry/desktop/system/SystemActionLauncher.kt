@@ -7,6 +7,7 @@ import android.net.Uri
 import android.provider.Settings
 import android.widget.Toast
 import com.tcrrry.desktop.R
+import com.tcrrry.desktop.install.ApkInstallActivity
 import com.tcrrry.desktop.model.AppEntry
 
 class SystemActionLauncher(
@@ -34,8 +35,12 @@ class SystemActionLauncher(
     )
 
     fun launchApp(entry: AppEntry): Boolean {
-        if (ComponentName.unflattenFromString(entry.componentName) == null) {
+        val component = ComponentName.unflattenFromString(entry.componentName)
+        if (component == null) {
             return unavailable(R.string.app_unavailable)
+        }
+        if (component == FileManagerContract.mainComponent) {
+            return launchExclusiveWindow(FileManagerContract.createMainIntent())
         }
         return standardFloatingWindowCoordinator.launch(entry.componentName)
     }
@@ -52,10 +57,31 @@ class SystemActionLauncher(
         )
     }
 
-    fun launchApkInstall(): Boolean = launchExclusiveWindow(
-        Intent().setClassName(context, "com.tcrrry.desktop.install.ApkInstallActivity")
+    fun launchApkInstaller(): Boolean = launchExclusiveWindow(
+        Intent(context, ApkInstallActivity::class.java)
             .addFlags(Intent.FLAG_ACTIVITY_NEW_TASK),
     )
+
+    fun isExternalStorageEnhancementAvailable(): Boolean =
+        FileManagerContract.supportsRemovableStorageEntry(context.packageManager)
+
+    fun launchExternalStorage(onLaunched: () -> Unit): Boolean {
+        if (!isExternalStorageEnhancementAvailable()) {
+            return unavailable(R.string.file_manager_unavailable)
+        }
+        val target = standardFloatingWindowGateway.prepareExplicitTarget(
+            FileManagerContract.createOpenRemovableStorageIntent(),
+        )
+            ?: return unavailable(R.string.file_manager_unavailable)
+        return standardFloatingWindowCoordinator.launchExclusive(
+            targetFailure = StandardFloatingWindowLaunchCoordinator.Failure.TARGET_UNAVAILABLE,
+            startTarget = {
+                standardFloatingWindowGateway.startExplicitTarget(target).also { started ->
+                    if (started) onLaunched()
+                }
+            },
+        )
+    }
 
     private fun launchExclusiveWindow(intent: Intent): Boolean {
         val target = standardFloatingWindowGateway.prepareExplicitTarget(intent)

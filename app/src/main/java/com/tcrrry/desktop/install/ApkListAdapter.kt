@@ -4,8 +4,8 @@ import android.view.LayoutInflater
 import android.view.View
 import android.view.ViewGroup
 import android.widget.TextView
-import androidx.recyclerview.widget.RecyclerView
 import androidx.recyclerview.widget.DiffUtil
+import androidx.recyclerview.widget.RecyclerView
 import com.tcrrry.desktop.R
 import com.tcrrry.desktop.model.ApkEntry
 import java.text.DateFormat
@@ -29,7 +29,8 @@ class ApkListAdapter(
 
     override fun getItemCount(): Int = entries.size
 
-    override fun getItemId(position: Int): Long = entries[position].contentUri.toString().hashCode().toLong()
+    override fun getItemId(position: Int): Long =
+        entries[position].contentUri.toString().hashCode().toLong()
 
     fun submitEntries(nextEntries: List<ApkEntry>) {
         val previousEntries = entries.toList()
@@ -38,7 +39,8 @@ class ApkListAdapter(
                 override fun getOldListSize(): Int = previousEntries.size
                 override fun getNewListSize(): Int = nextEntries.size
                 override fun areItemsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
-                    previousEntries[oldItemPosition].contentUri == nextEntries[newItemPosition].contentUri
+                    previousEntries[oldItemPosition].contentUri ==
+                        nextEntries[newItemPosition].contentUri
 
                 override fun areContentsTheSame(oldItemPosition: Int, newItemPosition: Int): Boolean =
                     previousEntries[oldItemPosition] == nextEntries[newItemPosition]

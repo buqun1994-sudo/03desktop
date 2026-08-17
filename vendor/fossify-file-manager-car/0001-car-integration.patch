@@ -1,0 +1,467 @@
+diff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml
+index 2684edd7f7efd0248ee37f8737a37c092bc40558..dee89936e14eee2c71bef5925ea39729324a26fc 100644
+--- a/app/src/main/AndroidManifest.xml
++++ b/app/src/main/AndroidManifest.xml
+@@ -36,6 +36,14 @@
+             android:configChanges="orientation"
+             android:exported="true">
+ 
++            <meta-data
++                android:name="org.fossify.filemanager.CAR_INTEGRATION_VERSION"
++                android:value="1" />
++
++            <meta-data
++                android:name="com.tcrrry.icar.window.STANDARD_FLOATING_WINDOW"
++                android:value="true" />
++
+             <intent-filter>
+                 <action android:name="android.intent.action.GET_CONTENT" />
+                 <data android:mimeType="*/*" />
+@@ -176,11 +184,6 @@
+             android:icon="@mipmap/ic_launcher_red"
+             android:roundIcon="@mipmap/ic_launcher_red"
+             android:targetActivity=".activities.SplashActivity">
+-
+-            <intent-filter>
+-                <action android:name="android.intent.action.MAIN" />
+-                <category android:name="android.intent.category.LAUNCHER" />
+-            </intent-filter>
+         </activity-alias>
+ 
+         <activity-alias
+@@ -190,11 +193,6 @@
+             android:icon="@mipmap/ic_launcher_pink"
+             android:roundIcon="@mipmap/ic_launcher_pink"
+             android:targetActivity=".activities.SplashActivity">
+-
+-            <intent-filter>
+-                <action android:name="android.intent.action.MAIN" />
+-                <category android:name="android.intent.category.LAUNCHER" />
+-            </intent-filter>
+         </activity-alias>
+ 
+         <activity-alias
+@@ -204,11 +202,6 @@
+             android:icon="@mipmap/ic_launcher_purple"
+             android:roundIcon="@mipmap/ic_launcher_purple"
+             android:targetActivity=".activities.SplashActivity">
+-
+-            <intent-filter>
+-                <action android:name="android.intent.action.MAIN" />
+-                <category android:name="android.intent.category.LAUNCHER" />
+-            </intent-filter>
+         </activity-alias>
+ 
+         <activity-alias
+@@ -218,11 +211,6 @@
+             android:icon="@mipmap/ic_launcher_deep_purple"
+             android:roundIcon="@mipmap/ic_launcher_deep_purple"
+             android:targetActivity=".activities.SplashActivity">
+-
+-            <intent-filter>
+-                <action android:name="android.intent.action.MAIN" />
+-                <category android:name="android.intent.category.LAUNCHER" />
+-            </intent-filter>
+         </activity-alias>
+ 
+         <activity-alias
+@@ -232,11 +220,6 @@
+             android:icon="@mipmap/ic_launcher_indigo"
+             android:roundIcon="@mipmap/ic_launcher_indigo"
+             android:targetActivity=".activities.SplashActivity">
+-
+-            <intent-filter>
+-                <action android:name="android.intent.action.MAIN" />
+-                <category android:name="android.intent.category.LAUNCHER" />
+-            </intent-filter>
+         </activity-alias>
+ 
+         <activity-alias
+@@ -246,11 +229,6 @@
+             android:icon="@mipmap/ic_launcher_blue"
+             android:roundIcon="@mipmap/ic_launcher_blue"
+             android:targetActivity=".activities.SplashActivity">
+-
+-            <intent-filter>
+-                <action android:name="android.intent.action.MAIN" />
+-                <category android:name="android.intent.category.LAUNCHER" />
+-            </intent-filter>
+         </activity-alias>
+ 
+         <activity-alias
+@@ -260,11 +238,6 @@
+             android:icon="@mipmap/ic_launcher_light_blue"
+             android:roundIcon="@mipmap/ic_launcher_light_blue"
+             android:targetActivity=".activities.SplashActivity">
+-
+-            <intent-filter>
+-                <action android:name="android.intent.action.MAIN" />
+-                <category android:name="android.intent.category.LAUNCHER" />
+-            </intent-filter>
+         </activity-alias>
+ 
+         <activity-alias
+@@ -274,11 +247,6 @@
+             android:icon="@mipmap/ic_launcher_cyan"
+             android:roundIcon="@mipmap/ic_launcher_cyan"
+             android:targetActivity=".activities.SplashActivity">
+-
+-            <intent-filter>
+-                <action android:name="android.intent.action.MAIN" />
+-                <category android:name="android.intent.category.LAUNCHER" />
+-            </intent-filter>
+         </activity-alias>
+ 
+         <activity-alias
+@@ -288,11 +256,6 @@
+             android:icon="@mipmap/ic_launcher_teal"
+             android:roundIcon="@mipmap/ic_launcher_teal"
+             android:targetActivity=".activities.SplashActivity">
+-
+-            <intent-filter>
+-                <action android:name="android.intent.action.MAIN" />
+-                <category android:name="android.intent.category.LAUNCHER" />
+-            </intent-filter>
+         </activity-alias>
+ 
+         <activity-alias
+@@ -302,11 +265,6 @@
+             android:icon="@mipmap/ic_launcher"
+             android:roundIcon="@mipmap/ic_launcher"
+             android:targetActivity=".activities.SplashActivity">
+-
+-            <intent-filter>
+-                <action android:name="android.intent.action.MAIN" />
+-                <category android:name="android.intent.category.LAUNCHER" />
+-            </intent-filter>
+         </activity-alias>
+ 
+         <activity-alias
+@@ -316,11 +274,6 @@
+             android:icon="@mipmap/ic_launcher_light_green"
+             android:roundIcon="@mipmap/ic_launcher_light_green"
+             android:targetActivity=".activities.SplashActivity">
+-
+-            <intent-filter>
+-                <action android:name="android.intent.action.MAIN" />
+-                <category android:name="android.intent.category.LAUNCHER" />
+-            </intent-filter>
+         </activity-alias>
+ 
+         <activity-alias
+@@ -330,11 +283,6 @@
+             android:icon="@mipmap/ic_launcher_lime"
+             android:roundIcon="@mipmap/ic_launcher_lime"
+             android:targetActivity=".activities.SplashActivity">
+-
+-            <intent-filter>
+-                <action android:name="android.intent.action.MAIN" />
+-                <category android:name="android.intent.category.LAUNCHER" />
+-            </intent-filter>
+         </activity-alias>
+ 
+         <activity-alias
+@@ -344,11 +292,6 @@
+             android:icon="@mipmap/ic_launcher_yellow"
+             android:roundIcon="@mipmap/ic_launcher_yellow"
+             android:targetActivity=".activities.SplashActivity">
+-
+-            <intent-filter>
+-                <action android:name="android.intent.action.MAIN" />
+-                <category android:name="android.intent.category.LAUNCHER" />
+-            </intent-filter>
+         </activity-alias>
+ 
+         <activity-alias
+@@ -358,11 +301,6 @@
+             android:icon="@mipmap/ic_launcher_amber"
+             android:roundIcon="@mipmap/ic_launcher_amber"
+             android:targetActivity=".activities.SplashActivity">
+-
+-            <intent-filter>
+-                <action android:name="android.intent.action.MAIN" />
+-                <category android:name="android.intent.category.LAUNCHER" />
+-            </intent-filter>
+         </activity-alias>
+ 
+         <activity-alias
+@@ -372,10 +310,6 @@
+             android:icon="@mipmap/ic_launcher_orange"
+             android:roundIcon="@mipmap/ic_launcher_orange"
+             android:targetActivity=".activities.SplashActivity">
+-            <intent-filter>
+-                <action android:name="android.intent.action.MAIN" />
+-                <category android:name="android.intent.category.LAUNCHER" />
+-            </intent-filter>
+         </activity-alias>
+ 
+         <activity-alias
+@@ -385,11 +319,6 @@
+             android:icon="@mipmap/ic_launcher_deep_orange"
+             android:roundIcon="@mipmap/ic_launcher_deep_orange"
+             android:targetActivity=".activities.SplashActivity">
+-
+-            <intent-filter>
+-                <action android:name="android.intent.action.MAIN" />
+-                <category android:name="android.intent.category.LAUNCHER" />
+-            </intent-filter>
+         </activity-alias>
+ 
+         <activity-alias
+@@ -399,11 +328,6 @@
+             android:icon="@mipmap/ic_launcher_brown"
+             android:roundIcon="@mipmap/ic_launcher_brown"
+             android:targetActivity=".activities.SplashActivity">
+-
+-            <intent-filter>
+-                <action android:name="android.intent.action.MAIN" />
+-                <category android:name="android.intent.category.LAUNCHER" />
+-            </intent-filter>
+         </activity-alias>
+ 
+         <activity-alias
+@@ -413,11 +337,6 @@
+             android:icon="@mipmap/ic_launcher_blue_grey"
+             android:roundIcon="@mipmap/ic_launcher_blue_grey"
+             android:targetActivity=".activities.SplashActivity">
+-
+-            <intent-filter>
+-                <action android:name="android.intent.action.MAIN" />
+-                <category android:name="android.intent.category.LAUNCHER" />
+-            </intent-filter>
+         </activity-alias>
+ 
+         <activity-alias
+@@ -427,11 +346,6 @@
+             android:icon="@mipmap/ic_launcher_grey_black"
+             android:roundIcon="@mipmap/ic_launcher_grey_black"
+             android:targetActivity=".activities.SplashActivity">
+-
+-            <intent-filter>
+-                <action android:name="android.intent.action.MAIN" />
+-                <category android:name="android.intent.category.LAUNCHER" />
+-            </intent-filter>
+         </activity-alias>
+     </application>
+ </manifest>
+diff --git a/app/src/main/kotlin/org/fossify/filemanager/activities/MainActivity.kt b/app/src/main/kotlin/org/fossify/filemanager/activities/MainActivity.kt
+index 4a6e4be77239e1c430bbea5ba65e513e3a2f19a4..7534da17d132dde4c371a784a2875479005557c7 100644
+--- a/app/src/main/kotlin/org/fossify/filemanager/activities/MainActivity.kt
++++ b/app/src/main/kotlin/org/fossify/filemanager/activities/MainActivity.kt
+@@ -6,7 +6,9 @@ import android.content.Intent
+ import android.graphics.drawable.Drawable
+ import android.media.RingtoneManager
+ import android.os.Bundle
++import android.os.Environment
+ import android.os.Handler
++import android.os.storage.StorageManager
+ import android.widget.ImageView
+ import android.widget.TextView
+ import androidx.viewpager.widget.ViewPager
+@@ -78,6 +80,9 @@ class MainActivity : SimpleActivity() {
+     override var isSearchBarEnabled = true
+     
+     companion object {
++        const val ACTION_OPEN_REMOVABLE_STORAGE =
++            "org.fossify.filemanager.action.OPEN_REMOVABLE_STORAGE"
++
+         private const val BACK_PRESS_TIMEOUT = 5000
+         private const val PICKED_PATH = "picked_path"
+     }
+@@ -294,8 +299,10 @@ class MainActivity : SimpleActivity() {
+     private fun tryInitFileManager() {
+         val hadPermission = hasStoragePermission()
+         handleStoragePermission {
+-            checkOTGPath()
+             if (it) {
++                if (intent.action != ACTION_OPEN_REMOVABLE_STORAGE) {
++                    checkOTGPath()
++                }
+                 if (binding.mainViewPager.adapter == null) {
+                     initFragments()
+                 }
+@@ -311,7 +318,10 @@ class MainActivity : SimpleActivity() {
+     }
+ 
+     private fun initFileManager(refreshRecents: Boolean) {
+-        if (intent.action == Intent.ACTION_VIEW && intent.data != null) {
++        if (intent.action == ACTION_OPEN_REMOVABLE_STORAGE) {
++            openRemovableStorage(refreshRecents)
++            return
++        } else if (intent.action == Intent.ACTION_VIEW && intent.data != null) {
+             val data = intent.data
+             if (data?.scheme == "file") {
+                 openPath(data.path!!)
+@@ -338,6 +348,47 @@ class MainActivity : SimpleActivity() {
+         }
+     }
+ 
++    private fun openRemovableStorage(refreshRecents: Boolean) {
++        ensureBackgroundThread {
++            val otgPath = findOTGPath()
++            runOnUiThread {
++                if (otgPath == null) {
++                    toast(R.string.no_removable_storage)
++                    openPath(config.homeFolder)
++                } else {
++                    config.wasOTGHandled = true
++                    config.OTGPath = otgPath
++                    openPath(otgPath)
++                }
++                binding.mainViewPager.currentItem = 0
++                if (refreshRecents) {
++                    getRecentsFragment()?.refreshFragment()
++                }
++            }
++        }
++    }
++
++    private fun findOTGPath(): String? {
++        val storageManager = getSystemService(StorageManager::class.java)
++        val mountedRemovablePath = storageManager.storageVolumes
++            .asSequence()
++            .filter { volume ->
++                volume.isRemovable &&
++                    !volume.isPrimary &&
++                    (volume.state == Environment.MEDIA_MOUNTED ||
++                        volume.state == Environment.MEDIA_MOUNTED_READ_ONLY)
++            }
++            .mapNotNull { volume -> volume.uuid?.let { uuid -> "/storage/$uuid" } }
++            .firstOrNull { path -> File(path).isDirectory }
++        if (mountedRemovablePath != null) return mountedRemovablePath
++
++        return getStorageDirectories()
++            .firstOrNull {
++                it.trimEnd('/') != internalStoragePath && it.trimEnd('/') != sdCardPath
++            }
++            ?.trimEnd('/')
++    }
++
+     private fun initFragments() {
+         binding.mainViewPager.apply {
+             adapter = ViewPagerAdapter(this@MainActivity, mTabsToShow)
+@@ -448,9 +499,9 @@ class MainActivity : SimpleActivity() {
+     private fun checkOTGPath() {
+         ensureBackgroundThread {
+             if (!config.wasOTGHandled && hasPermission(PERMISSION_WRITE_STORAGE) && hasOTGConnected() && config.OTGPath.isEmpty()) {
+-                getStorageDirectories().firstOrNull { it.trimEnd('/') != internalStoragePath && it.trimEnd('/') != sdCardPath }?.apply {
++                findOTGPath()?.apply {
+                     config.wasOTGHandled = true
+-                    config.OTGPath = trimEnd('/')
++                    config.OTGPath = this
+                 }
+             }
+         }
+diff --git a/app/src/main/kotlin/org/fossify/filemanager/activities/SimpleActivity.kt b/app/src/main/kotlin/org/fossify/filemanager/activities/SimpleActivity.kt
+index e98b7a9a235f9912eedc5508f9175e84f5f92b4b..0c5c21c88a7430f5cb78705b3ff6e332d9703030 100644
+--- a/app/src/main/kotlin/org/fossify/filemanager/activities/SimpleActivity.kt
++++ b/app/src/main/kotlin/org/fossify/filemanager/activities/SimpleActivity.kt
+@@ -1,6 +1,7 @@
+ package org.fossify.filemanager.activities
+ 
+ import android.annotation.SuppressLint
++import android.content.Context
+ import android.content.Intent
+ import android.os.Environment
+ import android.provider.Settings
+@@ -13,8 +14,13 @@ import org.fossify.commons.extensions.toast
+ import org.fossify.commons.helpers.PERMISSION_WRITE_STORAGE
+ import org.fossify.commons.helpers.isRPlus
+ import org.fossify.filemanager.R
++import org.fossify.filemanager.extensions.withFixedUiScale
+ 
+ open class SimpleActivity : BaseSimpleActivity() {
++    override fun attachBaseContext(newBase: Context) {
++        super.attachBaseContext(newBase.withFixedUiScale())
++    }
++
+     override fun getAppIconIDs() = arrayListOf(
+         R.mipmap.ic_launcher_red,
+         R.mipmap.ic_launcher_pink,
+diff --git a/app/src/main/kotlin/org/fossify/filemanager/activities/SplashActivity.kt b/app/src/main/kotlin/org/fossify/filemanager/activities/SplashActivity.kt
+index 727cfd43dfa23614129e2f50718859d7f6614285..c4b6e126b2f0700044acdf1258ccfb30f8b683bd 100644
+--- a/app/src/main/kotlin/org/fossify/filemanager/activities/SplashActivity.kt
++++ b/app/src/main/kotlin/org/fossify/filemanager/activities/SplashActivity.kt
+@@ -1,9 +1,15 @@
+ package org.fossify.filemanager.activities
+ 
++import android.content.Context
+ import android.content.Intent
+ import org.fossify.commons.activities.BaseSplashActivity
++import org.fossify.filemanager.extensions.withFixedUiScale
+ 
+ class SplashActivity : BaseSplashActivity() {
++    override fun attachBaseContext(newBase: Context) {
++        super.attachBaseContext(newBase.withFixedUiScale())
++    }
++
+     override fun initActivity() {
+         if (intent.action == Intent.ACTION_VIEW && intent.data != null) {
+             Intent(this, MainActivity::class.java).apply {
+diff --git a/app/src/main/kotlin/org/fossify/filemanager/extensions/Context.kt b/app/src/main/kotlin/org/fossify/filemanager/extensions/Context.kt
+index a61de593ae4bdf0a7bb733e1973555ed0f435bd6..8de895cd1f00165140ddea41701fa5ed12bc6802 100644
+--- a/app/src/main/kotlin/org/fossify/filemanager/extensions/Context.kt
++++ b/app/src/main/kotlin/org/fossify/filemanager/extensions/Context.kt
+@@ -1,12 +1,25 @@
+ package org.fossify.filemanager.extensions
+ 
+ import android.content.Context
++import android.content.res.Configuration
+ import android.os.storage.StorageManager
+ import org.fossify.commons.extensions.isPathOnOTG
+ import org.fossify.commons.extensions.isPathOnSD
+ import org.fossify.filemanager.helpers.Config
+ import org.fossify.filemanager.helpers.PRIMARY_VOLUME_NAME
+ import java.util.Locale
++import kotlin.math.roundToInt
++
++private const val FIXED_UI_SCALE = 1.75f
++
++fun Context.withFixedUiScale(): Context {
++    val currentDensityDpi = resources.configuration.densityDpi
++    if (currentDensityDpi <= 0) return this
++    val scaledConfiguration = Configuration(resources.configuration).apply {
++        densityDpi = (currentDensityDpi * FIXED_UI_SCALE).roundToInt()
++    }
++    return createConfigurationContext(scaledConfiguration)
++}
+ 
+ val Context.config: Config get() = Config.newInstance(applicationContext)
+ 
+diff --git a/app/src/main/res/values-zh-rCN/strings.xml b/app/src/main/res/values-zh-rCN/strings.xml
+index 51d93af2e33f0b8377890a65aec8d733b84215af..e8fd9ac61ab9dc702a86dafc39903b141998a249 100644
+--- a/app/src/main/res/values-zh-rCN/strings.xml
++++ b/app/src/main/res/values-zh-rCN/strings.xml
+@@ -1,6 +1,7 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <resources>
+     <string name="app_launcher_name">文件管理器</string>
++    <string name="no_removable_storage">没有可用的 U 盘</string>
+     <string name="press_back_again">再次按返回退出</string>
+     <string name="go_to_home_folder">前往主文件夹</string>
+     <string name="set_as_home_folder">设为主文件夹</string>
+diff --git a/app/src/main/res/values/strings.xml b/app/src/main/res/values/strings.xml
+index 07a68b5498e784d2b1cd8a3da1718ee00917f7b2..0d3874856b016a4dec33545317b2c2121a70b91e 100644
+--- a/app/src/main/res/values/strings.xml
++++ b/app/src/main/res/values/strings.xml
+@@ -1,6 +1,7 @@
+ <?xml version="1.0" encoding="utf-8"?>
+ <resources>
+     <string name="app_launcher_name">File Manager</string>
++    <string name="no_removable_storage">No removable storage found</string>
+     <string name="press_back_again">Press back again to exit</string>
+     <string name="go_to_home_folder">Go to home folder</string>
+     <string name="set_as_home_folder">Set as home folder</string>
+diff --git a/gradle.properties b/gradle.properties
+index ebf6c72497cc53efd87682a814321f5132639402..22c3b699e3661070df72da6e963d1ceffab76d8c 100644
+--- a/gradle.properties
++++ b/gradle.properties
+@@ -20,6 +20,6 @@ org.gradle.jvmargs=-Xmx4g
+ # org.gradle.parallel=true
+ 
+ # Versioning
+-VERSION_NAME=1.6.1
+-VERSION_CODE=13
++VERSION_NAME=1.6.1-car175.1
++VERSION_CODE=14
+ APP_ID=org.fossify.filemanager

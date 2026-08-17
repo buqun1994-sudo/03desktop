@@ -56,7 +56,6 @@ const requiredFiles = [
   ".agents/skills/template-feedback/SKILL.md",
   ".agents/skills/template-feedback/agents/openai.yaml",
   "scripts/init-project.mjs",
-  "scripts/check-localization.mjs",
   "scripts/check-project-ready.mjs",
   "scripts/check-skills.mjs",
   ".codex/README.md",

@@ -1,6 +1,5 @@
 package com.tcrrry.desktop.install
 
-import com.tcrrry.desktop.model.ApkSource
 import org.junit.Assert.assertEquals
 import org.junit.Assert.fail
 import org.junit.Test
@@ -75,7 +74,7 @@ class ApkScannerTest {
             )
             fail("Expected cancellation")
         } catch (_: TestCancellation) {
-            // Expected: cancellation must propagate out of traversal.
+            // Cancellation must propagate out of traversal.
         }
         assertEquals(2, checkpoints)
     }
@@ -85,7 +84,6 @@ class ApkScannerTest {
         displayName = name,
         sizeBytes = 1L,
         lastModified = modified,
-        source = ApkSource.DOWNLOADS,
     )
 
     private class TestCancellation : RuntimeException()

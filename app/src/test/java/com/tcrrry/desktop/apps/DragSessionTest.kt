@@ -37,6 +37,15 @@ class DragSessionTest {
     }
 
     @Test
+    fun `protected app drop cannot enter uninstall flow`() {
+        val session = DragSession(entries())
+        session.move(0, 2)
+
+        val result = session.finish(cancelled = false, uninstallHit = true, canRequestUninstall = false)
+        assertEquals(listOf("b", "c", "a"), (result as DragResult.Commit).entries.map { it.packageName })
+    }
+
+    @Test
     fun `uninstall hit testing follows the dragged center`() {
         assertFalse(isDraggedCenterInsideBounds(1326, 170, 132, 154, 0f, 0f, 1290, 792, 1890, 900))
         assertTrue(isDraggedCenterInsideBounds(1326, 170, 132, 154, 150f, 620f, 1290, 792, 1890, 900))
