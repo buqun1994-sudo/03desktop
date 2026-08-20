@@ -1,22 +1,102 @@
+import java.io.File
+import java.util.Properties
+
+fun Properties.requiredSigningValue(name: String): String =
+    getProperty(name)?.trim()?.takeIf(String::isNotEmpty)
+        ?: error("Signing property '$name' is required")
+
+val desktopSigningEnvironment = providers.gradleProperty("desktopSigningEnvironment")
+    .orElse("debug")
+    .get()
+    .trim()
+    .lowercase()
+require(desktopSigningEnvironment in setOf("debug", "staging")) {
+    "desktopSigningEnvironment must be debug or staging"
+}
+
+val stagingSigningPropertiesFile = providers.gradleProperty("desktopStagingSigningPropertiesFile")
+    .orNull
+    ?.trim()
+    ?.takeIf(String::isNotEmpty)
+    ?.let(rootProject::file)
+val stagingSigningProperties = Properties()
+val stagingSigningStoreFile = if (desktopSigningEnvironment == "staging") {
+    val propertiesFile = requireNotNull(stagingSigningPropertiesFile) {
+        "Staging APK signing properties file is required"
+    }
+    require(propertiesFile.isFile) {
+        "Staging APK signing properties file does not exist"
+    }
+    propertiesFile.inputStream().use(stagingSigningProperties::load)
+    val configuredStoreFile = stagingSigningProperties.requiredSigningValue("storeFile")
+    val candidate = File(configuredStoreFile)
+    val resolved = if (candidate.isAbsolute) candidate else propertiesFile.parentFile.resolve(configuredStoreFile)
+    require(resolved.isFile) { "Staging APK keystore does not exist" }
+    resolved
+} else {
+    null
+}
+
+val productionSigningPropertiesFile = providers.gradleProperty("desktopProductionSigningPropertiesFile")
+    .orNull
+    ?.trim()
+    ?.takeIf(String::isNotEmpty)
+    ?.let(rootProject::file)
+val productionSigningProperties = Properties()
+val productionSigningStoreFile = productionSigningPropertiesFile?.let { propertiesFile ->
+    require(propertiesFile.isFile) {
+        "Production APK signing properties file does not exist"
+    }
+    propertiesFile.inputStream().use(productionSigningProperties::load)
+    val configuredStoreFile = productionSigningProperties.requiredSigningValue("storeFile")
+    val candidate = File(configuredStoreFile)
+    val resolved = if (candidate.isAbsolute) candidate else propertiesFile.parentFile.resolve(configuredStoreFile)
+    require(resolved.isFile) { "Production APK keystore does not exist" }
+    resolved
+}
+
 plugins {
     id("com.android.application")
     id("org.jetbrains.kotlin.android")
 }
 
 android {
-    namespace = "com.tcrrry.desktop"
+    namespace = "com.ninepointnine.desktop"
     compileSdk = 34
 
     defaultConfig {
-        applicationId = "com.tcrrry.desktop"
+        applicationId = "com.ninepointnine.desktop"
         minSdk = 28
         targetSdk = 28
         versionCode = 1
         versionName = "0.1.0"
     }
 
+    signingConfigs {
+        create("release") {
+            if (productionSigningStoreFile != null) {
+                storeFile = productionSigningStoreFile
+                storePassword = productionSigningProperties.requiredSigningValue("storePassword")
+                keyAlias = productionSigningProperties.requiredSigningValue("keyAlias")
+                keyPassword = productionSigningProperties.requiredSigningValue("keyPassword")
+            }
+        }
+        if (stagingSigningStoreFile != null) {
+            create("staging") {
+                storeFile = stagingSigningStoreFile
+                storePassword = stagingSigningProperties.requiredSigningValue("storePassword")
+                keyAlias = stagingSigningProperties.requiredSigningValue("keyAlias")
+                keyPassword = stagingSigningProperties.requiredSigningValue("keyPassword")
+            }
+        }
+    }
+
     buildTypes {
+        getByName("debug") {
+            signingConfigs.findByName("staging")?.let { signingConfig = it }
+        }
         release {
+            signingConfig = signingConfigs.getByName("release")
             isMinifyEnabled = false
             proguardFiles(
                 getDefaultProguardFile("proguard-android-optimize.txt"),
@@ -36,6 +116,17 @@ android {
 
     lint {
         disable += "ExpiredTargetSdkVersion"
+    }
+}
+
+tasks.configureEach {
+    if (name == "preReleaseBuild" || name == "validateSigningRelease") {
+        doFirst {
+            require(productionSigningStoreFile != null) {
+                "Production APK signing properties file is required. " +
+                    "Pass -PdesktopProductionSigningPropertiesFile=<path-to-signing.properties>."
+            }
+        }
     }
 }
 

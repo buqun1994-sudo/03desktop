@@ -6,6 +6,6 @@
         android:functionalTest="true"
         android:handleProfiling="false"
         android:label="03桌面 V1 smoke"
-        android:targetPackage="com.tcrrry.desktop" />
+        android:targetPackage="com.ninepointnine.desktop" />
 
 </manifest>

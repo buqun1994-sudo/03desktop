@@ -46,7 +46,7 @@ fi
 LAUNCH_COMPONENT="$(resolve_activity -a android.intent.action.MAIN -c android.intent.category.LAUNCHER "$PROBE_PACKAGE")"
 UNINSTALL_COMPONENT="$(resolve_activity -a android.settings.APPLICATION_DETAILS_SETTINGS -d "package:$PROBE_PACKAGE")"
 INSTALL_COMPONENT="$(resolve_activity -a android.intent.action.VIEW -t application/vnd.android.package-archive -d file:///sdcard/Download/capability-probe.apk)"
-UNKNOWN_SOURCE_COMPONENT="$(resolve_activity -a android.settings.MANAGE_UNKNOWN_APP_SOURCES -d package:com.tcrrry.desktop)"
+UNKNOWN_SOURCE_COMPONENT="$(resolve_activity -a android.settings.MANAGE_UNKNOWN_APP_SOURCES -d package:com.ninepointnine.desktop)"
 VOLUMES="$($ANDROID_ADB_BIN shell sm list-volumes all | tr -d '\r')"
 
 for component in "$LAUNCH_COMPONENT" "$UNINSTALL_COMPONENT" "$INSTALL_COMPONENT" "$UNKNOWN_SOURCE_COMPONENT"; do

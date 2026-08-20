@@ -15,7 +15,7 @@
 | V1 抽屉、应用管理、权限、状态流和物理施工边界 | `docs/plans/V1架构施工方案.md` |
 | 未来新增车型、原车 UI 与事件行为适配顺序 | `docs/plans/多车型适配工作顺序.md` |
 | Android 工具链、本机配置、构建与 ADB | `docs/operations/开发环境.md` |
-| 包名、签名与升级身份 | `docs/decisions/0001-Android技术栈与应用身份.md` |
+| 包名、签名与升级身份 | `docs/decisions/0001-Android技术栈与应用身份.md` + `docs/plans/03desktop包名与签名迁移方案.md` |
 | 隐藏自身及自卸载边界 | `docs/decisions/0002-隐藏自身及自卸载边界.md` |
 | 原车 UI 证据与抽屉视觉 token | `docs/architecture/rules/design.md` + `03lyrics/docs/architecture/iCAR车机UI设计规范.md`（只读来源） |
 | 车机系统能力探测结果 | `docs/testing/车机能力验证记录.md` |

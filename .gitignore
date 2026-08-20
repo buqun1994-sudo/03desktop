@@ -8,6 +8,7 @@
 local.properties
 android-env.local.properties
 keystore.properties
+signing.properties
 *.jks
 *.keystore
 

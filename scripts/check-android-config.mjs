@@ -21,12 +21,13 @@ const requiredFiles = [
   "keystore.properties.example",
   "app/build.gradle.kts",
   "app/src/main/AndroidManifest.xml",
-  "app/src/main/java/com/tcrrry/desktop/MainActivity.kt",
-  "app/src/main/java/com/tcrrry/desktop/debug/NavigationDemoAccessibilityService.kt",
-  "app/src/main/java/com/tcrrry/desktop/install/ApkInstallActivity.kt",
-  "app/src/main/java/com/tcrrry/desktop/install/ApkScanner.kt",
-  "app/src/main/java/com/tcrrry/desktop/system/FileManagerContract.kt",
+  "app/src/main/java/com/ninepointnine/desktop/MainActivity.kt",
+  "app/src/main/java/com/ninepointnine/desktop/debug/NavigationDemoAccessibilityService.kt",
+  "app/src/main/java/com/ninepointnine/desktop/install/ApkInstallActivity.kt",
+  "app/src/main/java/com/ninepointnine/desktop/install/ApkScanner.kt",
+  "app/src/main/java/com/ninepointnine/desktop/system/FileManagerContract.kt",
   "app/src/main/res/xml/global_back_accessibility_service.xml",
+  "docs/plans/03desktop包名与签名迁移方案.md",
   "docs/plans/V1架构施工方案.md",
   "docs/operations/开发环境.md",
   "docs/testing/车机能力验证记录.md",
@@ -49,31 +50,31 @@ const build = read("app/build.gradle.kts");
 const manifest = read("app/src/main/AndroidManifest.xml");
 const debugManifest = read("app/src/debug/AndroidManifest.xml");
 const systemActionLauncher = read(
-  "app/src/main/java/com/tcrrry/desktop/system/SystemActionLauncher.kt",
+  "app/src/main/java/com/ninepointnine/desktop/system/SystemActionLauncher.kt",
 );
-const mainActivity = read("app/src/main/java/com/tcrrry/desktop/MainActivity.kt");
-const appEntry = read("app/src/main/java/com/tcrrry/desktop/model/AppEntry.kt");
+const mainActivity = read("app/src/main/java/com/ninepointnine/desktop/MainActivity.kt");
+const appEntry = read("app/src/main/java/com/ninepointnine/desktop/model/AppEntry.kt");
 const appCatalogRepository = read(
-  "app/src/main/java/com/tcrrry/desktop/apps/AppCatalogRepository.kt",
+  "app/src/main/java/com/ninepointnine/desktop/apps/AppCatalogRepository.kt",
 );
 const fileManagerContract = read(
-  "app/src/main/java/com/tcrrry/desktop/system/FileManagerContract.kt",
+  "app/src/main/java/com/ninepointnine/desktop/system/FileManagerContract.kt",
 );
 const apkInstallActivity = read(
-  "app/src/main/java/com/tcrrry/desktop/install/ApkInstallActivity.kt",
+  "app/src/main/java/com/ninepointnine/desktop/install/ApkInstallActivity.kt",
 );
 const apkInstallLayout = read("app/src/main/res/layout/activity_apk_install.xml");
 const debugInstallScript = read("scripts/install-debug-to-device.sh");
 const globalBackService = read(
-  "app/src/main/java/com/tcrrry/desktop/debug/NavigationDemoAccessibilityService.kt",
+  "app/src/main/java/com/ninepointnine/desktop/debug/NavigationDemoAccessibilityService.kt",
 );
 const globalBackConfig = read("app/src/main/res/xml/global_back_accessibility_service.xml");
 const fossifyPatch = read("vendor/fossify-file-manager-car/0001-car-integration.patch");
 const stateText = read(".new-project-template/state.json");
 
 for (const expected of [
-  'namespace = "com.tcrrry.desktop"',
-  'applicationId = "com.tcrrry.desktop"',
+  'namespace = "com.ninepointnine.desktop"',
+  'applicationId = "com.ninepointnine.desktop"',
   "minSdk = 28",
   "targetSdk = 28",
   "compileSdk = 34",
@@ -81,6 +82,20 @@ for (const expected of [
   'disable += "ExpiredTargetSdkVersion"',
 ]) {
   if (!build.includes(expected)) failures.push(`Android 配置缺少：${expected}`);
+}
+
+for (const expected of [
+  "desktopSigningEnvironment",
+  "desktopStagingSigningPropertiesFile",
+  "desktopProductionSigningPropertiesFile",
+  'create("staging")',
+  'create("release")',
+  'name == "preReleaseBuild"',
+]) {
+  if (!build.includes(expected)) failures.push(`Android 签名配置缺少：${expected}`);
+}
+if (build.includes('rootProject.file("keystore.properties")')) {
+  failures.push("Android 签名仍读取仓库根 keystore.properties");
 }
 
 const allowedPermissions = new Set([
@@ -190,7 +205,8 @@ function collectFiles(directory) {
 for (const file of collectFiles(join(root, "app/src/main"))) {
   if (!/\.(kt|kts|xml|pro)$/.test(file)) continue;
   const source = readFileSync(file, "utf8");
-  if (source.includes("com.tcrrry.desktoplyrics")) {
+  if (source.includes("com.tcrrry.desktoplyrics") ||
+      source.includes("com.ninepointnine.desktoplyrics")) {
     failures.push(`产品源码引用了 03歌词 身份：${file.slice(root.length + 1)}`);
   }
   if (/Settings\.Secure\.put[A-Za-z]*\s*\(/.test(source)) {
@@ -207,7 +223,12 @@ try {
   failures.push("项目初始化状态不是合法 JSON");
 }
 
-for (const localFile of ["local.properties", "android-env.local.properties", "keystore.properties"]) {
+for (const localFile of [
+  "local.properties",
+  "android-env.local.properties",
+  "keystore.properties",
+  "signing.properties",
+]) {
   const ignored = spawnSync("git", ["check-ignore", "-q", localFile], { cwd: root });
   if (ignored.status !== 0) failures.push(`本机文件未被 Git 忽略：${localFile}`);
 }

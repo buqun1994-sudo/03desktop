@@ -114,6 +114,15 @@
 10. 最终 Debug 覆盖安装已核验 `READ_EXTERNAL_STORAGE: granted=true`、`REQUEST_INSTALL_PACKAGES: allow`、应用进程和悬浮服务正常。抽屉始终展示“安装 APK”和显式文件管理器；安装页没有授权按钮或授权跳转，直接列出 Download 中 1 个测试 APK；点选后 `com.android.packageinstaller/.PackageInstallerActivity` 实际进入前台，随后返回取消，未安装测试包。
 11. 文件管理器系统 Launcher 查询仍为 `No activities found`，公开 `MainActivity` 可显式解析；从 `03桌面` 网格可打开内部存储，从安装页连续两轮点击“打开 U 盘”均重新创建可见窗口并进入 `/storage/udisk` 的“USB”根目录。跳转成功后旧安装页任务已移除，`03桌面` 进程和悬浮服务继续运行。
 
+## 2026-08-20 包名与双环境签名迁移
+
+1. 用户确认按 03投屏 的命名规律把 `03桌面` 的长期包名迁移为 `com.ninepointnine.desktop`；主源码、Debug instrumentation、JVM 测试、Manifest、安装脚本、配置护栏和活动架构锚点已同步迁移。`com.tcrrry.icar.window.*` 与 `com.tcrrry.icar.surface.*` 协议常量保持不变。
+2. 已在仓库外新建独立 staging / production RSA 4096 证书：staging 摘要为 `BFB70DC15B54AD2F1B8ACD35FA26ECF552BF2EF21D416A44B7EEDA5E5E9EBAA9`，production 摘要为 `D5ED175F00BD64BE4DE15ECC03B3EB3D1019305A89637E0A1C6B4DF314AA2417`。JKS、`signing.properties`、口令和私钥未进入 Git。
+3. Gradle 已接入仓库外属性：默认 Debug 保持开发证书；显式 `desktopSigningEnvironment=staging` 使用测试证书；Release 缺 production 属性时 fail closed，不回退到 Debug 证书。
+4. 已通过默认 Debug、staging Debug 和 production Release 构建；两个签名 APK 的包名均为 `com.ninepointnine.desktop`，单 signer、v2、证书一致性和秘密扫描均通过；staging / production 缺材料负向测试均按预期失败。
+5. 本机已制作两份逐字节一致的待转移备份，但当前没有挂载外置介质，尚未完成真正离线双备份。新包尚未安装到车机、未卸载历史包、未清数据、未重新授权、未部署 cloud 或对外分发。
+6. Cloud 的 `products/03desktop/README.md` 已登记新包名、两套公开摘要和构建注入字段，并纳入仓库完整性清单；定向 fast verification 通过。未写入 Cloud secret，未执行 staging 部署或 production 上线。
+
 ## 记录规则
 
 1. 只记录已发生事实、验证结果、未完成事项和下一步。

@@ -5,7 +5,7 @@ set -euo pipefail
 PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOCAL_ANDROID_PROPERTIES="$PROJECT_ROOT/local.properties"
 DEBUG_APK="$PROJECT_ROOT/app/build/outputs/apk/debug/app-debug.apk"
-EXPECTED_PACKAGE="com.tcrrry.desktop"
+EXPECTED_PACKAGE="com.ninepointnine.desktop"
 EXPECTED_COMPONENT="$EXPECTED_PACKAGE/.MainActivity"
 EXPECTED_SERVICE="$EXPECTED_PACKAGE/.overlay.OverlayService"
 

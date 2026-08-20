@@ -12,7 +12,7 @@
 ## 2. 03桌面项目规则
 
 1. 触发条件：新增 Android 业务能力。动作：保持 Kotlin + XML Views 单模块，按 `model`、`overlay`、`apps`、`system`、`boot` 分包；UI/Service/Receiver 只编排，系统 API 由适配器独占。验证：普通切片执行 Debug 构建和命中的直接相关测试；完整配置、单测与 Lint 只在里程碑口径执行。边界：只有现有抽象无法表达且出现真实复用时才新增模块或框架。
-2. 触发条件：新增文件或子包。动作：从 `MainActivity.kt` 复制 UTF-8 文件头与 `com.tcrrry.desktop` ASCII 根包，XML 从现有 Manifest 复制声明。验证：当前功能切片结束时统一构建；出现命名空间、类型归属或资源错误时先修复。边界：禁止复制 `03歌词` 的命名空间、源码或 Manifest。
+2. 触发条件：新增文件或子包。动作：从 `MainActivity.kt` 复制 UTF-8 文件头与 `com.ninepointnine.desktop` ASCII 根包，XML 从现有 Manifest 复制声明。验证：当前功能切片结束时统一构建；出现命名空间、类型归属或资源错误时先修复。边界：禁止复制 `03歌词` 的命名空间、源码或 Manifest。
 3. 触发条件：处理应用排序。动作：包名 + `firstInstallTime` 是安装身份，SharedPreferences JSON 是顺序唯一真值；拖拽帧只改内存，松手最多写一次。验证：`AppOrderReconcilerTest` 与 `DragSessionTest`。边界：显示名称、组件顺序和 Bitmap 不得进入持久排序身份。
 4. 触发条件：连接 PackageManager、WindowManager、Intent 或全局返回。动作：从 `docs/plans/V1架构施工方案.md` 指定的适配器入口施工；全局返回只能经过 `GlobalBackActionGateway` 连接正式 AccessibilityService。验证：直接相关纯函数单测 + Debug 构建，运行效果交给用户按本轮路径手测；里程碑或明确要求时再做 `S56_HQX` smoke。边界：车厂私有接口、反射、ADB 和 shell 不能成为产品主链；无障碍不得超出单次 `GLOBAL_ACTION_BACK`。
 5. 触发条件：Kotlin 函数使用表达式体（`=`）且需要在条件分支提前退出。动作：改用块函数体，或把分支表达为局部结果；不得在表达式体中使用非局部 `return`。验证：先运行受影响 Kotlin 编译与对应单测。边界：此规则适用于 Kotlin 编译器语义，不是 Android 或本项目特例；可作为模板候选规则。
