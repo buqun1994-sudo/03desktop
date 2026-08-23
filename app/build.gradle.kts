@@ -5,6 +5,27 @@ fun Properties.requiredSigningValue(name: String): String =
     getProperty(name)?.trim()?.takeIf(String::isNotEmpty)
         ?: error("Signing property '$name' is required")
 
+fun Properties.requiredReleaseValue(name: String): String =
+    getProperty(name)?.trim()?.takeIf(String::isNotEmpty)
+        ?: error("Release version property '$name' is required")
+
+val releaseVersionPropertiesFile = rootProject.file("release-version.properties")
+val releaseVersionProperties = Properties().apply {
+    require(releaseVersionPropertiesFile.isFile) {
+        "Release version properties file does not exist: $releaseVersionPropertiesFile"
+    }
+    releaseVersionPropertiesFile.inputStream().use(::load)
+}
+val releaseVersionName = releaseVersionProperties.requiredReleaseValue("releaseVersionName")
+val releaseVersionCode = releaseVersionProperties.requiredReleaseValue("releaseVersionCode").toIntOrNull()
+    ?: error("Release version property 'releaseVersionCode' must be a positive integer")
+require(releaseVersionCode > 0) {
+    "Release version property 'releaseVersionCode' must be a positive integer"
+}
+require(Regex("\\d+\\.\\d+\\.\\d+-icar03").matches(releaseVersionName)) {
+    "Release version name must match <major>.<minor>.<patch>-icar03"
+}
+
 val desktopSigningEnvironment = providers.gradleProperty("desktopSigningEnvironment")
     .orElse("debug")
     .get()
@@ -116,6 +137,15 @@ android {
 
     lint {
         disable += "ExpiredTargetSdkVersion"
+    }
+}
+
+androidComponents {
+    onVariants(selector().withBuildType("release")) { variant ->
+        variant.outputs.forEach { output ->
+            output.versionName.set(releaseVersionName)
+            output.versionCode.set(releaseVersionCode)
+        }
     }
 }
 

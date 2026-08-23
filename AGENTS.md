@@ -82,3 +82,9 @@
 3. 只有用户明确要求提交或任务开始时已授权本轮提交，才执行 `git add` 和提交；用户手动验收可以发生在任意功能切片之后，不必等待整个 V1。
 4. 普通代码交付需说明改动、实际最低成本机器检查、是否执行 install-only，以及完整手测用例；不把启动状态或交互 smoke 作为默认交付项。提交、发布、阻断或高风险操作时再补充 Git、部署和门禁状态。
 5. 未经用户明确要求，不默认部署测试环境，不默认上线正式环境；向车机覆盖安装 Debug APK 属于本项目开发验证，不代表部署或正式发布。
+
+## 9. Release 版本约束
+
+1. `release-version.properties` 是 Release 的唯一版本真值；Release 输出固定使用其中的 `releaseVersionName`，当前为 `1.0.0-icar03`。Debug 与 Staging 继续使用 `app/build.gradle.kts` 的 `defaultConfig` 版本，不因 Release 版本变化而改动。
+2. 用户未指定版本时，正式发布准备必须执行 `node scripts/bump-release-version.mjs`，只递增 `major.minor.patch-icar03` 的最后一位并同步递增 `releaseVersionCode`；用户明确指定版本时使用 `--version <major.minor.patch-icar03>`，不得擅自改写用户指定值。
+3. 构建本身不得修改版本文件；发布前先运行 `node scripts/bump-release-version.mjs --check`，再构建 Release 并核对 APK 元数据、签名和 `versionCode` 单调递增。该规则只约束 Release，不适用于 Debug / Staging。

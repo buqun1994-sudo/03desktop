@@ -14,3 +14,4 @@
 3. 触发条件：完成可在目标车机手测的应用行为改动。动作：构建通过后执行 `./scripts/install-debug-to-device.sh`，脚本只允许向型号、SDK 和分辨率均匹配的车机覆盖安装仓库固定 Debug APK，再非阻塞启动 `com.ninepointnine.desktop/.MainActivity`，并在有限时间内轮询进程与悬浮服务。验证：安装成功、目标包更新时间更新、进程和前台悬浮服务存在，脚本能明确成功或超时退出。边界：入口 Activity 可能立即结束，不得用无界界面启动等待代替运行状态检查；不清数据、不授予权限、不重启设备，不接受自定义包名或任意 APK 路径。
 4. 触发条件：安装其它 APK、重启、清数据、授权或改车机设置。动作：作为运行级验证显式记录目标、动作和恢复方式，并取得本轮授权。验证：操作前后状态对比。边界：环境检查脚本永远只读；本项目自身 Debug 覆盖安装不重复请求授权。
 5. 触发条件：准备 release。动作：先确认独立签名、版本递增、构建、升级安装和回滚 APK。验证：真机覆盖升级与签名核对。边界：当前没有部署/上线自动化，未经指令不生成或分发正式版本。
+6. 触发条件：准备 Release 版本。动作：读取仓库根 `release-version.properties`；未指定版本时运行 `node scripts/bump-release-version.mjs` 递增 patch 并同步递增 `releaseVersionCode`，有明确版本时传入 `--version`；构建不会自行改写版本文件，Debug / Staging 不读取 Release 版本覆盖。验证：`node scripts/bump-release-version.mjs --check`、Release APK 元数据和签名核对。边界：不把版本递增等同于部署、上线或车机安装。

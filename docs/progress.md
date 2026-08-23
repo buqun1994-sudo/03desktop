@@ -1,5 +1,10 @@
 # 项目进度
 
+## 2026-08-24 Release 版本规则
+
+1. Release 版本真值固定在根目录 `release-version.properties`，当前 `versionName=1.0.0-icar03`；Debug / Staging 继续使用原有 `0.1.0` 基线。
+2. 未指定版本时由 `scripts/bump-release-version.mjs` 递增 patch 并同步递增 `versionCode`；明确指定版本时使用传入值。构建过程不会自动改写版本文件。
+
 ## 2026-08-13 项目初始化与 V1 架构基线
 
 1. 目标：将 `NewProject` 模板独立初始化为 `03桌面` Android 项目，并在业务施工前固化产品、架构、环境、权限和验证边界。
