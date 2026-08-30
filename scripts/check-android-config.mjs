@@ -35,6 +35,8 @@ const requiredFiles = [
   "vendor/fossify-file-manager-car/LICENSE-GPL-3.0.txt",
   "vendor/fossify-file-manager-car/README.md",
   "vendor/fossify-file-manager-car/build-core-debug.sh",
+  "vendor/fossify-file-manager-car/build-core-release.sh",
+  "vendor/fossify-file-manager-car/generate-release-signing.mjs",
 ];
 
 for (const file of requiredFiles) {
@@ -70,6 +72,8 @@ const globalBackService = read(
 );
 const globalBackConfig = read("app/src/main/res/xml/global_back_accessibility_service.xml");
 const fossifyPatch = read("vendor/fossify-file-manager-car/0001-car-integration.patch");
+const fossifyReleaseBuild = read("vendor/fossify-file-manager-car/build-core-release.sh");
+const fossifyReleaseSigning = read("vendor/fossify-file-manager-car/generate-release-signing.mjs");
 const stateText = read(".new-project-template/state.json");
 
 for (const expected of [
@@ -177,9 +181,22 @@ if (!appCatalogRepository.includes("fileManagerCandidate(packageManager, deviceP
 if (!fossifyPatch.includes("org.fossify.filemanager.CAR_INTEGRATION_VERSION") ||
     !fossifyPatch.includes("org.fossify.filemanager.action.OPEN_REMOVABLE_STORAGE") ||
     !fossifyPatch.includes("StorageManager") ||
+    !fossifyPatch.includes('release {\n+            applicationIdSuffix = ".debug"') ||
     !fossifyPatch.includes('-                <category android:name="android.intent.category.LAUNCHER" />') ||
     /^\+.*android\.intent\.category\.LAUNCHER/m.test(fossifyPatch)) {
   failures.push("Fossify 补丁未保持显式 U 盘契约或无系统 Launcher 入口边界");
+}
+if (!fossifyReleaseBuild.includes("6879b7871a10057df197b73508835c8772d98e47") ||
+    !fossifyReleaseBuild.includes(":app:assembleCoreRelease") ||
+    !fossifyReleaseBuild.includes("SIGNING_STORE_FILE") ||
+    !fossifyReleaseBuild.includes("git -C \"$SOURCE_DIR\" apply --check")) {
+  failures.push("Fossify Release 构建未固定上游、补丁或仓库外签名注入");
+}
+if (!fossifyReleaseSigning.includes("Signing material output must stay outside the repository.") ||
+    !fossifyReleaseSigning.includes('"-keyalg", "RSA"') ||
+    !fossifyReleaseSigning.includes('"-keysize", "4096"') ||
+    !fossifyReleaseSigning.includes("Third-Party Open Source Adaptation")) {
+  failures.push("Fossify Release 签名生成器未保持仓库外第三方适配身份边界");
 }
 
 if (!systemActionLauncher.includes("standardFloatingWindowCoordinator.launchExclusive")) {

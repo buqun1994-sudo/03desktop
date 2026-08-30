@@ -1,8 +1,17 @@
 # 项目进度
 
+## 2026-08-30 Fossify 文件管理器车机适配版 production Release（完成，未上线）
+
+1. 保持上游 `1.6.1` / `6879b7871a10057df197b73508835c8772d98e47`、GPLv3、包名 `org.fossify.filemanager.debug`、公开车机 Activity 和无系统 Launcher 入口；没有创建 `03filemanager`，没有进入 commerce、license 或 `com.ninepointnine` 身份体系。
+2. 新增仓库外独立 Release 签名材料生成器和可复现 `coreRelease` 构建脚本；补丁为 Release 变体保留 `.debug` applicationId 后缀，最终 APK 为 `debuggable=false`。JKS、口令、properties 和构建产物未进入 Git。
+3. production APK 为 `1.6.1-car175.1 (14)`，大小 `9,982,465` 字节，SHA-256 为 `728318792042905f45eeaa5a20924a0bb0c186812756cfffbaa7b1dc29dadf5b`；证书 SHA-256 为 `be75daa9799eaa4bbe0592a59ce66d3aaef9931d7f7f76ef732907665408a10f`，单 signer、APK Signature Scheme v2 有效。单 APK ZIP 大小 `5,777,068` 字节，SHA-256 为 `36f1965ef1007e3b6e5f10bef35ddc76e63bac6622c9176eb80f861e2f0751ca`。
+4. 该证书只代表 9.9 Studio 对 Fossify 修改版的分发签名，不是 Fossify 官方证书或官方发布身份；对外下载必须同时提供固定上游提交、完整补丁和 `LICENSE-GPL-3.0.txt` 入口。
+5. 本轮只准备与核验 production 产物，没有安装 Release、部署官网、发布下载链接或上线 Cloud 配置。
+6. `check-project-ready`、Skills 快检、Android 配置 Guard、Release 脚本 Node / Bash 语法、固定上游提交 `git apply --check`、Release 版本检查和 `git diff --check` 均通过；APK / ZIP 的大小、摘要、单 APK 归档结构、包名、版本、`debuggable=false`、单 signer、v2 和证书摘要已再次复核。
+
 ## 2026-08-24 Release 版本规则
 
-1. Release 版本真值固定在根目录 `release-version.properties`，当前 `versionName=1.0.0-icar03`；Debug / Staging 继续使用原有 `0.1.0` 基线。
+1. Release 版本真值固定在根目录 `release-version.properties`，当前 `versionName=1.0.1-icar03` / `versionCode=2`；Debug / Staging 继续使用原有 `0.1.0` 基线。
 2. 未指定版本时由 `scripts/bump-release-version.mjs` 递增 patch 并同步递增 `versionCode`；明确指定版本时使用传入值。构建过程不会自动改写版本文件。
 
 ## 2026-08-13 项目初始化与 V1 架构基线

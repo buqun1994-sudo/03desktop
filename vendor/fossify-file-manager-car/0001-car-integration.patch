@@ -1,3 +1,15 @@
+diff --git a/app/build.gradle.kts b/app/build.gradle.kts
+index 57154336..fab7d676 100644
+--- a/app/build.gradle.kts
++++ b/app/build.gradle.kts
+@@ -69,6 +69,7 @@ android {
+             applicationIdSuffix = ".debug"
+         }
+         release {
++            applicationIdSuffix = ".debug"
+             isMinifyEnabled = true
+             proguardFiles(
+                 getDefaultProguardFile("proguard-android-optimize.txt"),
 diff --git a/app/src/main/AndroidManifest.xml b/app/src/main/AndroidManifest.xml
 index 2684edd7f7efd0248ee37f8737a37c092bc40558..dee89936e14eee2c71bef5925ea39729324a26fc 100644
 --- a/app/src/main/AndroidManifest.xml
