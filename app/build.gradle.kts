@@ -89,8 +89,8 @@ android {
         applicationId = "com.ninepointnine.desktop"
         minSdk = 28
         targetSdk = 28
-        versionCode = 1
-        versionName = "0.1.0"
+        versionCode = releaseVersionCode
+        versionName = releaseVersionName
     }
 
     signingConfigs {
@@ -114,6 +114,8 @@ android {
 
     buildTypes {
         getByName("debug") {
+            applicationIdSuffix = ".test"
+            versionNameSuffix = "-test"
             signingConfigs.findByName("staging")?.let { signingConfig = it }
         }
         release {

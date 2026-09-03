@@ -1,5 +1,11 @@
 # 项目进度
 
+## 2026-09-03 03 APP 测试身份简化（施工中，未发布）
+
+1. 正式包名保持 `com.ninepointnine.desktop`；Debug/staging 测试包统一为 `com.ninepointnine.desktop.test`，版本名在同一正式版本后追加 `-test`。
+2. Debug/staging 与 Release 共用根目录 `release-version.properties`（当前 `1.0.1-icar03` / `versionCode=2`）；每次只递增这一份版本文件即可连续覆盖更新测试包。测试包与正式包可并存，不能互相覆盖升级。
+3. 本轮只同步构建、台账、检查和文档规则，不生成、不上传、不部署、不上线产物。
+
 ## 2026-08-30 Fossify 文件管理器车机适配版 production Release（完成，未上线）
 
 1. 保持上游 `1.6.1` / `6879b7871a10057df197b73508835c8772d98e47`、GPLv3、包名 `org.fossify.filemanager.debug`、公开车机 Activity 和无系统 Launcher 入口；没有创建 `03filemanager`，没有进入 commerce、license 或 `com.ninepointnine` 身份体系。

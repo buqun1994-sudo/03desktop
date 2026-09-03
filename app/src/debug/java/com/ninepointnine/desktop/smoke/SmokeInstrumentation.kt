@@ -34,7 +34,7 @@ class SmokeInstrumentation : Instrumentation() {
 
     private fun verifyCatalog(result: Bundle) {
         val entries = runBlocking { AppCatalogRepository(targetContext).load() }
-        check(entries.none { it.packageName == SELF_PACKAGE })
+        check(entries.none { it.packageName == targetContext.packageName })
         val lyrics = entries.singleOrNull { it.packageName == LYRICS_PACKAGE }
         check(lyrics != null && lyrics.canRequestUninstall)
         check(entries.distinctBy { it.packageName }.size == entries.size)
@@ -49,7 +49,6 @@ class SmokeInstrumentation : Instrumentation() {
         const val RESULT_ERROR = "error"
         const val RESULT_CATALOG_SIZE = "catalog_size"
         const val RESULT_CATALOG_PACKAGES = "catalog_packages"
-        const val SELF_PACKAGE = "com.ninepointnine.desktop"
         const val LYRICS_PACKAGE = "com.ninepointnine.desktoplyrics"
     }
 }

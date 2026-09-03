@@ -79,6 +79,8 @@ const stateText = read(".new-project-template/state.json");
 for (const expected of [
   'namespace = "com.ninepointnine.desktop"',
   'applicationId = "com.ninepointnine.desktop"',
+  'applicationIdSuffix = ".test"',
+  'versionNameSuffix = "-test"',
   "minSdk = 28",
   "targetSdk = 28",
   "compileSdk = 34",
