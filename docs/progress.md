@@ -1,10 +1,10 @@
 # 项目进度
 
-## 2026-09-03 03 APP 测试身份简化（施工中，未发布）
+## 2026-09-03 03 APP 测试身份简化（完成，测试包已生成）
 
 1. 正式包名保持 `com.ninepointnine.desktop`；Debug/staging 测试包统一为 `com.ninepointnine.desktop.test`，版本名在同一正式版本后追加 `-test`。
 2. Debug/staging 与 Release 共用根目录 `release-version.properties`（当前 `1.0.1-icar03` / `versionCode=2`）；每次只递增这一份版本文件即可连续覆盖更新测试包。测试包与正式包可并存，不能互相覆盖升级。
-3. 本轮只同步构建、台账、检查和文档规则，不生成、不上传、不部署、不上线产物。
+3. 已按用户指令生成使用长期 staging 证书签名的本地测试 APK 与 ZIP；未安装到车机、未部署、未上线。
 
 ## 2026-08-30 Fossify 文件管理器车机适配版 production Release（完成，未上线）
 

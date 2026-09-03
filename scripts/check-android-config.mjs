@@ -140,6 +140,13 @@ if (!apkInstallActivity.includes("READ_EXTERNAL_STORAGE") ||
 if (apkInstallActivity.includes("requestPermissions(") ||
     apkInstallActivity.includes("ACTION_MANAGE_UNKNOWN_APP_SOURCES") ||
     apkInstallLayout.includes("request_download_permission") ||
+    !debugInstallScript.includes('EXPECTED_PACKAGE="com.ninepointnine.desktop.test"') ||
+    !debugInstallScript.includes(
+      'EXPECTED_COMPONENT="$EXPECTED_PACKAGE/com.ninepointnine.desktop.MainActivity"',
+    ) ||
+    !debugInstallScript.includes(
+      'EXPECTED_SERVICE="$EXPECTED_PACKAGE/com.ninepointnine.desktop.overlay.OverlayService"',
+    ) ||
     !debugInstallScript.includes('install -r -g "$DEBUG_APK"') ||
     !debugInstallScript.includes("appops set \"$EXPECTED_PACKAGE\" REQUEST_INSTALL_PACKAGES allow")) {
   failures.push("APK 所需权限未统一由安装流程授予，页面仍保留重复授权入口");

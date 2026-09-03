@@ -6,8 +6,8 @@ PROJECT_ROOT="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 LOCAL_ANDROID_PROPERTIES="$PROJECT_ROOT/local.properties"
 DEBUG_APK="$PROJECT_ROOT/app/build/outputs/apk/debug/app-debug.apk"
 EXPECTED_PACKAGE="com.ninepointnine.desktop.test"
-EXPECTED_COMPONENT="$EXPECTED_PACKAGE/.MainActivity"
-EXPECTED_SERVICE="$EXPECTED_PACKAGE/.overlay.OverlayService"
+EXPECTED_COMPONENT="$EXPECTED_PACKAGE/com.ninepointnine.desktop.MainActivity"
+EXPECTED_SERVICE="$EXPECTED_PACKAGE/com.ninepointnine.desktop.overlay.OverlayService"
 
 read_property() {
     local file_path="$1"
