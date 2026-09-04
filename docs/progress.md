@@ -1,9 +1,27 @@
 # 项目进度
 
+## 2026-09-04 staging 测试包（完成，未安装）
+
+1. 版本源 `release-version.properties` 已升级为 `1.0.3-icar03` / `versionCode=4`；通过 Cloud 统一入口生成 `03桌面-staging-v1.0.3-icar03-test.apk` 与对应 ZIP，输出目录为桌面目录 `03系列测试包-新`。
+2. APK 包名为 `com.ninepointnine.desktop.test`，版本为 `1.0.3-icar03-test (4)`，staging 证书 SHA-256 为 `bfb70dc15b54ad2f1b8acd35fa26ecf552bf2ef21d416a44b7eeda5e5e9ebaa9`，APK Signature Scheme v2 校验通过。
+3. APK 大小 `6,072,878` 字节，SHA-256 为 `ba3f32446993355e771c332257fa8d8808026b2185a3e0c33b68b42096edfc52`；ZIP 大小 `2,151,525` 字节，SHA-256 为 `c89d2f16628c8170bd38b0bde4f7cdfbaf0f90142b7c441844880fea5606bab4`。ZIP 单 APK 条目与完整性校验通过；未安装、未部署、未上传、未提交或推送。
+
+## 2026-09-04 03helper 应用库存桥接协议 v2（代码完成，待车机只读主测）
+
+1. `AppCatalogRepository.loadUserInstalledApplications()` 输出当前用户的非系统应用，包含真实显示名、版本、首次安装时间、更新时间、UID 和 PackageManager 解析出的 launcher 组件，并按首次安装时间倒序。
+2. `AppCatalogBridgeProvider` 提供只读 `applications` 与 `icons/<packageName>` 两条路径；应用元数据带 summary 数量 / SHA-256 收据，图标按包名读取并限制 PNG 体积。未执行控制命令、清数据、卸载或授权写入。
+3. 已通过 `:app:compileDebugKotlin`、` :app:testDebugUnitTest`；当前尚未把新版 03桌面 Debug APK 安装到目标车机，也未完成真实 `content query` 的中文名称、双包并存、排序和图标读取主测。
+
+## 2026-09-03 staging 测试包版本升级（完成，待用户主测）
+
+1. `release-version.properties` 已递增为 `1.0.2-icar03` / `versionCode=3`，Cloud 03 APP 登记同步为 staging `1.0.2-icar03-test (3)`。
+2. 通过 Cloud 统一 staging 入口生成桌面目录 `03系列测试包-新/03桌面-staging-v1.0.2-icar03-test.apk` 与对应 ZIP；APK / ZIP SHA-256 为 `23a1a541f58777b076cc1c4d272ccdac3c469944a369594bc485cfc6e3ecc` / `fb09f2c3dc6ad51e34ed05cce17f60d36b27d5d87ea8268b375d228f0c2f8767`。
+3. 构建器已校验测试包名、版本、staging 证书、APK v2 签名及 ZIP 单 APK 条目；未执行设备安装、蓝奏上传或提交 / 推送。
+
 ## 2026-09-03 03 APP 测试身份简化（完成，测试包已生成）
 
 1. 正式包名保持 `com.ninepointnine.desktop`；Debug/staging 测试包统一为 `com.ninepointnine.desktop.test`，版本名在同一正式版本后追加 `-test`。
-2. Debug/staging 与 Release 共用根目录 `release-version.properties`（当前 `1.0.1-icar03` / `versionCode=2`）；每次只递增这一份版本文件即可连续覆盖更新测试包。测试包与正式包可并存，不能互相覆盖升级。
+2. Debug/staging 与 Release 共用根目录 `release-version.properties`（当前 `1.0.2-icar03` / `versionCode=3`）；每次只递增这一份版本文件即可连续覆盖更新测试包。测试包与正式包可并存，不能互相覆盖升级。
 3. 已按用户指令生成使用长期 staging 证书签名的本地测试 APK 与 ZIP；未安装到车机、未部署、未上线。
 
 ## 2026-08-30 Fossify 文件管理器车机适配版 production Release（完成，未上线）

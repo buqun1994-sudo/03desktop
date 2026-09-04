@@ -53,6 +53,41 @@ class AppCatalogRepository(
         )
     }
 
+    /** Full user-installed inventory used by the maintenance bridge. */
+    fun loadUserInstalledApplications(): List<AppCatalogBridgeEntry> {
+        val packageManager = context.packageManager
+        return packageManager.getInstalledPackages(0)
+            .mapNotNull { packageInfo ->
+                val applicationInfo = packageInfo.applicationInfo ?: return@mapNotNull null
+                val isSystem = applicationInfo.flags and ApplicationInfo.FLAG_SYSTEM != 0
+                if (isSystem) {
+                    return@mapNotNull null
+                }
+                val packageName = packageInfo.packageName
+                if (packageName.isBlank()) return@mapNotNull null
+                AppCatalogBridgeEntry(
+                    packageName = packageName,
+                    displayName = applicationInfo.loadLabel(packageManager).toString().ifBlank { packageName },
+                    versionName = packageInfo.versionName.orEmpty(),
+                    versionCode = if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.P) {
+                        packageInfo.longVersionCode
+                    } else {
+                        @Suppress("DEPRECATION")
+                        packageInfo.versionCode.toLong()
+                    },
+                    firstInstallTime = packageInfo.firstInstallTime,
+                    lastUpdateTime = packageInfo.lastUpdateTime,
+                    uid = applicationInfo.uid,
+                    launcherComponent = packageManager.getLaunchIntentForPackage(packageName)
+                        ?.component
+                        ?.let { component -> canonicalComponentName(component.packageName, component.className) },
+                )
+            }
+            .sortedWith(compareByDescending<AppCatalogBridgeEntry> { it.firstInstallTime }
+                .thenByDescending { it.lastUpdateTime }
+                .thenBy { it.packageName })
+    }
+
     private fun ResolveInfo.toCandidate(
         packageManager: PackageManager,
         deviceProfile: OemDeviceProfile,
@@ -153,3 +188,14 @@ class AppCatalogRepository(
         }.toSet()
     }
 }
+
+data class AppCatalogBridgeEntry(
+    val packageName: String,
+    val displayName: String,
+    val versionName: String,
+    val versionCode: Long,
+    val firstInstallTime: Long,
+    val lastUpdateTime: Long,
+    val uid: Int,
+    val launcherComponent: String?,
+)

@@ -78,6 +78,12 @@
                 android:name="android.support.FILE_PROVIDER_PATHS"
                 android:resource="@xml/file_paths" />
         </provider>
+
+        <provider
+            android:name=".apps.AppCatalogBridgeProvider"
+            android:authorities="${applicationId}.appcatalog"
+            android:exported="true"
+            android:grantUriPermissions="false" />
     </application>
 
 </manifest>
