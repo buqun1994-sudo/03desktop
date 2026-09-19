@@ -228,6 +228,8 @@ class AppDragController(
     }
 
     private fun updateDragPresentation(itemView: View, dragging: Boolean, animate: Boolean) {
+        // Scrolling stays inside the grid; an active drag may cross into the uninstall target.
+        recyclerView.clipChildren = !dragging
         dragLayer.translationZ = if (dragging) dragLayerTranslationZ else 0f
         animateScale(itemView, if (dragging) DRAGGED_ITEM_SCALE else NORMAL_SCALE, animate)
     }
