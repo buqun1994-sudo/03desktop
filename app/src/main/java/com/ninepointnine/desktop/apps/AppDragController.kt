@@ -3,6 +3,7 @@ package com.ninepointnine.desktop.apps
 import android.graphics.Rect
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewGroup
 import android.view.animation.DecelerateInterpolator
 import android.widget.ViewAnimator
 import androidx.recyclerview.widget.ItemTouchHelper
@@ -67,7 +68,7 @@ sealed class DragResult {
 class AppDragController(
     private val recyclerView: RecyclerView,
     private val adapter: AppGridAdapter,
-    private val dragLayer: View,
+    private val dragLayer: ViewGroup,
     private val actionSwitcher: ViewAnimator,
     private val uninstallTarget: View,
     private val onDragStateChanged: (Boolean) -> Unit,
@@ -230,6 +231,8 @@ class AppDragController(
     private fun updateDragPresentation(itemView: View, dragging: Boolean, animate: Boolean) {
         // Scrolling stays inside the grid; an active drag may cross into the uninstall target.
         recyclerView.clipChildren = !dragging
+        recyclerView.clipToPadding = !dragging
+        dragLayer.clipChildren = !dragging
         dragLayer.translationZ = if (dragging) dragLayerTranslationZ else 0f
         animateScale(itemView, if (dragging) DRAGGED_ITEM_SCALE else NORMAL_SCALE, animate)
     }

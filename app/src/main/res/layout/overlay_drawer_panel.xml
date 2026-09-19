@@ -28,7 +28,7 @@
             android:id="@+id/drawer_grid_layer"
             android:layout_width="match_parent"
             android:layout_height="0px"
-            android:clipChildren="false"
+            android:clipChildren="true"
             android:clipToPadding="false"
             android:layout_weight="1">
 
@@ -37,7 +37,7 @@
                 android:layout_width="match_parent"
                 android:layout_height="match_parent"
                 android:clipChildren="true"
-                android:clipToPadding="false"
+                android:clipToPadding="true"
                 android:overScrollMode="never"
                 android:paddingLeft="@dimen/drawer_grid_horizontal_padding"
                 android:paddingTop="@dimen/drawer_grid_vertical_padding"

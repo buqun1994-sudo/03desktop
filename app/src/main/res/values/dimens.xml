@@ -17,10 +17,12 @@
     <dimen name="drawer_grid_horizontal_padding">@dimen/icar_spacing_18</dimen>
     <dimen name="drawer_grid_vertical_padding">@dimen/icar_spacing_18</dimen>
 
-    <dimen name="drawer_app_item_height">172px</dimen>
-    <dimen name="drawer_app_item_top_padding">10px</dimen>
-    <dimen name="drawer_app_icon_size">96px</dimen>
-    <dimen name="drawer_app_label_spacing">10px</dimen>
+    <!-- 558px grid = 18px * 2 padding + 3 * (164px item + 5px * 2 offset). -->
+    <dimen name="drawer_app_item_height">164px</dimen>
+    <dimen name="drawer_app_item_vertical_offset">5px</dimen>
+    <dimen name="drawer_app_item_top_padding">8px</dimen>
+    <dimen name="drawer_app_icon_size">92px</dimen>
+    <dimen name="drawer_app_label_spacing">8px</dimen>
     <dimen name="drawer_app_label_height">56px</dimen>
     <dimen name="drawer_app_label_horizontal_padding">4px</dimen>
     <dimen name="drawer_drag_layer_translation_z">24px</dimen>

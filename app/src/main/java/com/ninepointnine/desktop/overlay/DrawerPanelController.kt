@@ -3,6 +3,7 @@ package com.ninepointnine.desktop.overlay
 import android.content.Context
 import android.view.LayoutInflater
 import android.view.View
+import android.view.ViewGroup
 import android.widget.TextView
 import android.widget.ViewAnimator
 import androidx.recyclerview.widget.GridLayoutManager
@@ -34,7 +35,7 @@ class DrawerPanelController(
         @Suppress("InflateParams")
         val root = LayoutInflater.from(context).inflate(R.layout.overlay_drawer_panel, null, false)
         val grid = root.findViewById<RecyclerView>(R.id.app_grid)
-        val gridLayer = root.findViewById<View>(R.id.drawer_grid_layer)
+        val gridLayer = root.findViewById<ViewGroup>(R.id.drawer_grid_layer)
         val emptyView = root.findViewById<TextView>(R.id.app_grid_empty)
         val loadingView = root.findViewById<View>(R.id.app_grid_loading)
         val actionSwitcher = root.findViewById<ViewAnimator>(R.id.drawer_action_switcher)
@@ -47,6 +48,9 @@ class DrawerPanelController(
         val iconCache = IconCache(context)
         this.iconCache = iconCache
         emptyView.visibility = View.VISIBLE
+        val appItemVerticalOffsetPx = context.resources.getDimensionPixelSize(
+            R.dimen.drawer_app_item_vertical_offset,
+        )
 
         grid.layoutManager = GridLayoutManager(context, 4)
         grid.addItemDecoration(
@@ -59,8 +63,8 @@ class DrawerPanelController(
                 ) {
                     val position = parent.getChildAdapterPosition(view)
                     if (position == RecyclerView.NO_POSITION) return
-                    outRect.top = APP_ITEM_VERTICAL_OFFSET_PX
-                    outRect.bottom = APP_ITEM_VERTICAL_OFFSET_PX
+                    outRect.top = appItemVerticalOffsetPx
+                    outRect.bottom = appItemVerticalOffsetPx
                 }
             },
         )
@@ -138,7 +142,4 @@ class DrawerPanelController(
         }
     }
 
-    private companion object {
-        const val APP_ITEM_VERTICAL_OFFSET_PX = 11
-    }
 }
