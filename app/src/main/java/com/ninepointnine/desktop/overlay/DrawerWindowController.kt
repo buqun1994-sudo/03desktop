@@ -7,6 +7,7 @@ import android.view.Choreographer
 import android.view.Gravity
 import android.view.MotionEvent
 import android.view.View
+import android.view.ViewConfiguration
 import android.view.WindowManager
 import android.view.animation.DecelerateInterpolator
 import android.widget.FrameLayout
@@ -21,10 +22,11 @@ class DrawerWindowController(
     private val onPanelRemoved: () -> Unit,
     private val onDesktopSurfaceOccupancyChanged: (Boolean) -> Unit,
     private val onClosedTriggerBackRequested: () -> Boolean,
+    private val onClosedTriggerHomeRequested: () -> Boolean,
     private val onWindowFailure: () -> Unit,
 ) : DrawerGestureController.Listener {
     private val windowManager = context.getSystemService(WindowManager::class.java)
-    private val touchSlopPx = android.view.ViewConfiguration.get(context).scaledTouchSlop.toFloat()
+    private val touchSlopPx = ViewConfiguration.get(context).scaledTouchSlop.toFloat()
     private lateinit var triggerHandleView: View
     private val triggerView = createTriggerView(context)
     private val triggerLayoutParams = createTriggerLayoutParams()
@@ -33,6 +35,9 @@ class DrawerWindowController(
     private val occupancyTracker = DrawerSurfaceOccupancyTracker(onDesktopSurfaceOccupancyChanged)
     private val gestureController = DrawerGestureController(
         touchSlopPx = touchSlopPx,
+        longPressTimeoutMillis = ViewConfiguration.getLongPressTimeout().toLong(),
+        postDelayed = { callback, delay -> triggerView.postDelayed(callback, delay) },
+        removeCallbacks = { triggerView.removeCallbacks(it) },
         motionProvider = { DrawerGestureController.MotionSnapshot(openDistancePx, stableDock) },
         listener = this,
     )
@@ -61,6 +66,7 @@ class DrawerWindowController(
     }
 
     fun close(afterClosed: (() -> Unit)? = null) {
+        gestureController.cancel()
         pendingAfterClose = combineAfterClose(pendingAfterClose, afterClosed)
         if (stableDock == DrawerDock.CLOSED && animator == null && openDistancePx == 0) {
             applyPanelWindowState(PanelWindowState.PARKED)
@@ -74,6 +80,7 @@ class DrawerWindowController(
     fun isOpen(): Boolean = stableDock == DrawerDock.OPEN
 
     fun onConfigurationChanged() {
+        gestureController.cancel()
         val previousPanelState = panelWindowState ?: PanelWindowState.PARKED
         removeTrigger()
         removePanel()
@@ -125,6 +132,10 @@ class DrawerWindowController(
 
     override fun onClosedTriggerTapped() {
         triggerView.performClick()
+    }
+
+    override fun onClosedTriggerLongPressed() {
+        if (onClosedTriggerHomeRequested()) playNavigationFeedback()
     }
 
     private fun animateTo(destination: DrawerDock) {
@@ -265,9 +276,10 @@ class DrawerWindowController(
     }
 
     private fun removeTrigger(allowFailureCallback: Boolean = true) {
+        gestureController.cancel()
         if (!triggerAttached) return
         triggerAttached = false
-        triggerHandleView.removeCallbacks(resetBackClickFeedback)
+        triggerHandleView.removeCallbacks(resetNavigationFeedback)
         safely(allowFailureCallback) { windowManager.removeViewImmediate(triggerView) }
     }
 
@@ -319,18 +331,28 @@ class DrawerWindowController(
                 },
             )
             setOnClickListener {
-                if (onClosedTriggerBackRequested()) playBackClickFeedback()
+                if (onClosedTriggerBackRequested()) playNavigationFeedback()
             }
             setOnTouchListener { _, event: MotionEvent ->
-                if (pendingAfterClose != null) true else gestureController.onTouch(event)
+                if (pendingAfterClose == null) {
+                    when (event.actionMasked) {
+                        MotionEvent.ACTION_DOWN -> gestureController.onDown(event.rawX, event.rawY)
+                        MotionEvent.ACTION_MOVE -> gestureController.onMove(event.rawX, event.rawY)
+                        MotionEvent.ACTION_UP -> gestureController.onUp(event.rawX, event.rawY)
+                        MotionEvent.ACTION_CANCEL,
+                        MotionEvent.ACTION_POINTER_DOWN,
+                        -> gestureController.onCancel()
+                    }
+                }
+                true
             }
         }
     }
 
-    private fun playBackClickFeedback() {
-        triggerHandleView.removeCallbacks(resetBackClickFeedback)
+    private fun playNavigationFeedback() {
+        triggerHandleView.removeCallbacks(resetNavigationFeedback)
         triggerHandleView.background = context.getDrawable(R.drawable.bg_drawer_handle_active)
-        triggerHandleView.postDelayed(resetBackClickFeedback, BACK_FEEDBACK_DURATION_MS)
+        triggerHandleView.postDelayed(resetNavigationFeedback, NAVIGATION_FEEDBACK_DURATION_MS)
     }
 
     private fun createTriggerLayoutParams() = WindowManager.LayoutParams(
@@ -418,10 +440,10 @@ class DrawerWindowController(
         action?.invoke()
     }
 
-    private val resetBackClickFeedback = Runnable { refreshHandleBackground() }
+    private val resetNavigationFeedback = Runnable { refreshHandleBackground() }
 
     private companion object {
-        const val BACK_FEEDBACK_DURATION_MS = 180L
+        const val NAVIGATION_FEEDBACK_DURATION_MS = 180L
     }
 
     private enum class PanelWindowState {

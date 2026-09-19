@@ -13,6 +13,7 @@ import android.provider.Settings
 import androidx.core.app.NotificationCompat
 import com.ninepointnine.desktop.R
 import com.ninepointnine.desktop.apps.PackageChangeMonitor
+import com.ninepointnine.desktop.system.AndroidStandardFloatingWindowGateway
 import com.ninepointnine.desktop.system.GlobalBackActionGateway
 
 class OverlayService : Service() {
@@ -22,6 +23,7 @@ class OverlayService : Service() {
     private var packageChangeMonitor: PackageChangeMonitor? = null
     private var overlayOpListener: AppOpsManager.OnOpChangedListener? = null
     private val mainHandler by lazy { Handler(mainLooper) }
+    private val standardFloatingWindowGateway by lazy { AndroidStandardFloatingWindowGateway(this) }
 
     override fun onCreate() {
         super.onCreate()
@@ -64,6 +66,7 @@ class OverlayService : Service() {
                         surfaceOccupancyLeaseClient?.setOccupied(occupied)
                     },
                     onClosedTriggerBackRequested = GlobalBackActionGateway::performBack,
+                    onClosedTriggerHomeRequested = standardFloatingWindowGateway::startHome,
                     onWindowFailure = { releaseAndStop() },
                 ).also { it.showClosedTrigger() }
             }

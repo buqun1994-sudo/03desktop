@@ -1,5 +1,12 @@
 # 项目进度
 
+## 2026-09-05 手势条导航与正式 Release（完成，未安装）
+
+1. 关闭态触发条已支持三路互斥输入：轻点执行一次全局返回，达到系统长按时限回到车机原生桌面，向左滑动继续展开抽屉；移动、取消和动画打断会取消长按计时器。
+2. 新增 `DrawerGestureControllerTest` 覆盖轻点、长按、有效横滑和纵向阻断；手势单测、完整 Debug 单测、Lint 和 Debug 构建均通过。
+3. 版本源 `release-version.properties` 已升级为 `1.0.5-icar03` / `versionCode=6`；正式 Release 已使用登记的 production 证书构建并导出到桌面发布目录。
+4. Release APK 包名为 `com.ninepointnine.desktop`，单 signer、APK Signature Scheme v2 通过，证书 SHA-256 为 `d5ed175f00bd64be4de15ecc03b3eb3d1019305a89637e0a1c6b4df314aa2417`；未安装、未上传、未上线。
+
 ## 2026-09-04 staging 测试包（完成，未安装）
 
 1. 版本源 `release-version.properties` 已升级为 `1.0.3-icar03` / `versionCode=4`；通过 Cloud 统一入口生成 `03桌面-staging-v1.0.3-icar03-test.apk` 与对应 ZIP，输出目录为桌面目录 `03系列测试包-新`。

@@ -1,6 +1,5 @@
 package com.ninepointnine.desktop.overlay
 
-import android.view.MotionEvent
 import com.ninepointnine.desktop.model.DrawerDock
 import com.ninepointnine.desktop.model.GestureOrigin
 import kotlin.math.abs
@@ -8,6 +7,9 @@ import kotlin.math.roundToInt
 
 class DrawerGestureController(
     private val touchSlopPx: Float,
+    private val longPressTimeoutMillis: Long,
+    private val postDelayed: (Runnable, Long) -> Unit,
+    private val removeCallbacks: (Runnable) -> Unit,
     private val motionProvider: () -> MotionSnapshot,
     private val listener: Listener,
 ) {
@@ -22,12 +24,14 @@ class DrawerGestureController(
         fun onDistanceChanged(openDistancePx: Int)
         fun onSettleRequested(dock: DrawerDock)
         fun onClosedTriggerTapped()
+        fun onClosedTriggerLongPressed()
     }
 
     private enum class Direction {
         PENDING,
         HORIZONTAL,
         BLOCKED,
+        LONG_PRESSED,
     }
 
     private var direction = Direction.PENDING
@@ -36,43 +40,34 @@ class DrawerGestureController(
     private var startDistancePx = 0
     private var startDock = DrawerDock.CLOSED
     private var interruptedAnimation = false
-
-    fun onTouch(event: MotionEvent): Boolean = when (event.actionMasked) {
-        MotionEvent.ACTION_DOWN -> {
-            interruptedAnimation = listener.onGestureDown()
-            val snapshot = motionProvider()
-            downX = event.rawX
-            downY = event.rawY
-            startDistancePx = DrawerGeometry.clampOpenDistance(snapshot.openDistancePx)
-            startDock = snapshot.stableDock
-            direction = Direction.PENDING
-            true
+    private var gestureActive = false
+    private val longPressCallback = Runnable {
+        if (gestureActive && direction == Direction.PENDING && allowsNavigation()) {
+            direction = Direction.LONG_PRESSED
+            listener.onClosedTriggerLongPressed()
         }
-
-        MotionEvent.ACTION_MOVE -> {
-            handleMove(event)
-            true
-        }
-
-        MotionEvent.ACTION_UP -> {
-            finishGesture(cancelled = false)
-            true
-        }
-
-        MotionEvent.ACTION_CANCEL -> {
-            finishGesture(cancelled = true)
-            true
-        }
-
-        else -> true
     }
 
-    private fun handleMove(event: MotionEvent) {
-        val deltaX = event.rawX - downX
-        val deltaY = event.rawY - downY
+    fun onDown(rawX: Float, rawY: Float) {
+        cancel()
+        interruptedAnimation = listener.onGestureDown()
+        val snapshot = motionProvider()
+        downX = rawX
+        downY = rawY
+        startDistancePx = DrawerGeometry.clampOpenDistance(snapshot.openDistancePx)
+        startDock = snapshot.stableDock
+        gestureActive = true
+        if (allowsNavigation()) postDelayed(longPressCallback, longPressTimeoutMillis)
+    }
+
+    fun onMove(rawX: Float, rawY: Float) {
+        if (!gestureActive) return
+        val deltaX = rawX - downX
+        val deltaY = rawY - downY
 
         if (direction == Direction.PENDING) {
             if (abs(deltaX) <= touchSlopPx && abs(deltaY) <= touchSlopPx) return
+            removeCallbacks(longPressCallback)
             if (abs(deltaX) < abs(deltaY) * 1.2f) {
                 direction = Direction.BLOCKED
                 return
@@ -97,7 +92,30 @@ class DrawerGestureController(
         }
     }
 
+    fun onUp(rawX: Float, rawY: Float) {
+        // The final position can cross touch slop even without a preceding MOVE.
+        if (direction == Direction.PENDING) onMove(rawX, rawY)
+        finishGesture(cancelled = false)
+    }
+
+    fun onCancel() {
+        finishGesture(cancelled = true)
+    }
+
+    fun cancel() {
+        removeCallbacks(longPressCallback)
+        gestureActive = false
+        direction = Direction.PENDING
+        interruptedAnimation = false
+    }
+
+    private fun allowsNavigation(): Boolean =
+        !interruptedAnimation && startDock == DrawerDock.CLOSED && startDistancePx == 0
+
     private fun finishGesture(cancelled: Boolean) {
+        if (!gestureActive) return
+        removeCallbacks(longPressCallback)
+        gestureActive = false
         when (direction) {
             Direction.HORIZONTAL -> {
                 val destination = if (cancelled) {
@@ -111,7 +129,7 @@ class DrawerGestureController(
             }
 
             Direction.PENDING -> {
-                if (!cancelled && !interruptedAnimation && startDock == DrawerDock.CLOSED) {
+                if (!cancelled && allowsNavigation()) {
                     listener.onClosedTriggerTapped()
                 } else if (interruptedAnimation) {
                     listener.onSettleRequested(startDock)
@@ -119,6 +137,8 @@ class DrawerGestureController(
             }
 
             Direction.BLOCKED -> if (interruptedAnimation) listener.onSettleRequested(startDock)
+
+            Direction.LONG_PRESSED -> Unit
         }
         direction = Direction.PENDING
         interruptedAnimation = false
