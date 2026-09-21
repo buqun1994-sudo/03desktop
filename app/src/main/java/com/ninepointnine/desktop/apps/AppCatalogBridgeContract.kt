@@ -29,6 +29,31 @@ object AppCatalogBridgeContract {
     const val COLUMN_LAUNCHER_COMPONENT = "launcherComponent"
 }
 
+/** Typed bridge used by 03helper to manage user-selected autostart packages. */
+object AutostartBridgeContract {
+    const val AUTHORITY = "com.ninepointnine.desktop.autostart"
+    const val METHOD_GET_STATUS = "get_status"
+    const val METHOD_GET_STATUS_BATCH = "get_status_batch"
+    const val METHOD_SET_STATUS = "set_status"
+    const val METHOD_GET_CAPABILITY = "get_capability"
+    const val KEY_BATCH = "batch"
+    const val KEY_PACKAGE_NAME = "packageName"
+    const val KEY_STATE = "state"
+    const val KEY_ENABLED = "enabled"
+    const val KEY_SUPPORTED = "supported"
+    const val KEY_REASON = "reason"
+    const val STATE_ENABLED = "enabled"
+    const val STATE_DISABLED = "disabled"
+    const val STATE_UNSUPPORTED = "unsupported"
+    const val STATE_UNAVAILABLE = "unavailable"
+    const val REASON_NO_LAUNCHER = "no_launcher_activity"
+    const val REASON_PACKAGE_NOT_FOUND = "package_not_found"
+    const val REASON_APPLICATION_MANAGES_OWN_AUTOSTART = "application_manages_own_autostart"
+    const val REASON_INVALID_PACKAGE = "invalid_package"
+    const val REASON_INVALID_REQUEST = "invalid_request"
+    const val REASON_NOT_AUTHORIZED = "caller_not_authorized"
+}
+
 /** Owns the wire encoding shared by the provider and protocol tests. */
 internal object AppCatalogBridgeWireCodec {
     fun encode(entry: AppCatalogBridgeEntry): AppCatalogBridgeWireEntry = AppCatalogBridgeWireEntry(

@@ -84,6 +84,12 @@
             android:authorities="${applicationId}.appcatalog"
             android:exported="true"
             android:grantUriPermissions="false" />
+
+        <provider
+            android:name=".apps.AutostartBridgeProvider"
+            android:authorities="${applicationId}.autostart"
+            android:exported="true"
+            android:grantUriPermissions="false" />
     </application>
 
 </manifest>
