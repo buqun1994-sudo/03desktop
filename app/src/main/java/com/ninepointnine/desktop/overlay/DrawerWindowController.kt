@@ -3,6 +3,7 @@ package com.ninepointnine.desktop.overlay
 import android.animation.ValueAnimator
 import android.content.Context
 import android.graphics.PixelFormat
+import android.graphics.Point
 import android.view.Choreographer
 import android.view.Gravity
 import android.view.MotionEvent
@@ -14,7 +15,7 @@ import android.widget.FrameLayout
 import com.ninepointnine.desktop.R
 import com.ninepointnine.desktop.model.DrawerDock
 import com.ninepointnine.desktop.model.GestureOrigin
-import com.ninepointnine.desktop.model.DrawerMotion
+import kotlin.math.roundToInt
 
 class DrawerWindowController(
     private val context: Context,
@@ -27,6 +28,7 @@ class DrawerWindowController(
 ) : DrawerGestureController.Listener {
     private val windowManager = context.getSystemService(WindowManager::class.java)
     private val touchSlopPx = ViewConfiguration.get(context).scaledTouchSlop.toFloat()
+    private var geometry = readDisplayGeometry()
     private lateinit var triggerHandleView: View
     private val triggerView = createTriggerView(context)
     private val triggerLayoutParams = createTriggerLayoutParams()
@@ -38,6 +40,7 @@ class DrawerWindowController(
         longPressTimeoutMillis = ViewConfiguration.getLongPressTimeout().toLong(),
         postDelayed = { callback, delay -> triggerView.postDelayed(callback, delay) },
         removeCallbacks = { triggerView.removeCallbacks(it) },
+        geometryProvider = { geometry },
         motionProvider = { DrawerGestureController.MotionSnapshot(openDistancePx, stableDock) },
         listener = this,
     )
@@ -55,6 +58,8 @@ class DrawerWindowController(
     private var releasing = false
 
     fun showClosedTrigger() {
+        geometry = readDisplayGeometry()
+        syncTriggerGeometry()
         stableDock = DrawerDock.CLOSED
         openDistancePx = 0
         ensurePanelAttached()
@@ -81,9 +86,18 @@ class DrawerWindowController(
 
     fun onConfigurationChanged() {
         gestureController.cancel()
+        val previousMaxOpenDistancePx = geometry.maxOpenDistancePx
+        val openProgress = if (previousMaxOpenDistancePx == 0) {
+            0f
+        } else {
+            openDistancePx.toFloat() / previousMaxOpenDistancePx
+        }
         val previousPanelState = panelWindowState ?: PanelWindowState.PARKED
         removeTrigger()
         removePanel()
+        geometry = readDisplayGeometry()
+        syncTriggerGeometry()
+        openDistancePx = (openProgress * geometry.maxOpenDistancePx).roundToInt()
         refreshHandleBackground()
         ensurePanelAttached()
         if (!panelAttached) return
@@ -141,7 +155,7 @@ class DrawerWindowController(
     private fun animateTo(destination: DrawerDock) {
         animator?.cancel()
         val start = openDistancePx
-        val end = if (destination == DrawerDock.OPEN) DrawerMotion.MAX_OPEN_DISTANCE_PX else 0
+        val end = if (destination == DrawerDock.OPEN) geometry.maxOpenDistancePx else 0
         if (start == end) {
             completeSettle(destination)
             return
@@ -179,7 +193,7 @@ class DrawerWindowController(
     private fun completeSettle(destination: DrawerDock) {
         animator = null
         stableDock = destination
-        renderDistance(if (destination == DrawerDock.OPEN) DrawerMotion.MAX_OPEN_DISTANCE_PX else 0)
+        renderDistance(if (destination == DrawerDock.OPEN) geometry.maxOpenDistancePx else 0)
         if (destination == DrawerDock.OPEN) {
             applyPanelWindowState(PanelWindowState.OPEN)
         } else {
@@ -190,8 +204,8 @@ class DrawerWindowController(
     }
 
     private fun renderDistance(distancePx: Int) {
-        openDistancePx = DrawerGeometry.clampOpenDistance(distancePx)
-        val translationX = DrawerGeometry.panelTranslationX(openDistancePx)
+        openDistancePx = geometry.clampOpenDistance(distancePx)
+        val translationX = geometry.panelTranslationX(openDistancePx)
         panelContentView?.let { contentView ->
             if (contentView.translationX != translationX) contentView.translationX = translationX
         }
@@ -200,7 +214,7 @@ class DrawerWindowController(
 
     private fun scheduleTriggerPosition() {
         if (frameScheduled || !triggerAttached ||
-            triggerLayoutParams.x == DrawerGeometry.triggerX(openDistancePx)
+            triggerLayoutParams.x == geometry.triggerX(openDistancePx)
         ) {
             return
         }
@@ -208,7 +222,7 @@ class DrawerWindowController(
         frameScheduler.postFrameCallback {
             frameScheduled = false
             if (!triggerAttached) return@postFrameCallback
-            val targetX = DrawerGeometry.triggerX(openDistancePx)
+            val targetX = geometry.triggerX(openDistancePx)
             if (triggerLayoutParams.x == targetX) return@postFrameCallback
             triggerLayoutParams.x = targetX
             safely { windowManager.updateViewLayout(triggerView, triggerLayoutParams) }
@@ -217,7 +231,7 @@ class DrawerWindowController(
 
     private fun ensureTriggerAttached() {
         if (triggerAttached) return
-        triggerLayoutParams.x = DrawerGeometry.triggerX(openDistancePx)
+        triggerLayoutParams.x = geometry.triggerX(openDistancePx)
         safely {
             windowManager.addView(triggerView, triggerLayoutParams)
             triggerAttached = true
@@ -227,10 +241,14 @@ class DrawerWindowController(
     private fun ensurePanelAttached() {
         if (panelAttached) return
         configurePanelLayoutParams(PanelWindowState.PARKED)
-        val translationX = DrawerGeometry.panelTranslationX(openDistancePx)
+        val translationX = geometry.panelTranslationX(openDistancePx)
         val contentView: View
         val windowView = try {
             contentView = panelFactory().apply {
+                pivotX = 0f
+                pivotY = 0f
+                scaleX = geometry.scale
+                scaleY = geometry.scale
                 this.translationX = translationX
             }
             FrameLayout(context).apply {
@@ -240,8 +258,8 @@ class DrawerWindowController(
                 addView(
                     contentView,
                     FrameLayout.LayoutParams(
-                        DrawerGeometry.PANEL_WIDTH_PX,
-                        DrawerGeometry.PANEL_HEIGHT_PX,
+                        DrawerGeometry.DESIGN_PANEL_WIDTH_PX,
+                        DrawerGeometry.DESIGN_PANEL_HEIGHT_PX,
                     ),
                 )
                 setOnTouchListener { _, event -> handlePanelTouch(event) }
@@ -293,24 +311,24 @@ class DrawerWindowController(
 
     private fun configurePanelLayoutParams(state: PanelWindowState) {
         panelLayoutParams.x = if (state == PanelWindowState.PARKED) {
-            DrawerGeometry.SCREEN_WIDTH_PX
+            geometry.screenWidthPx
         } else {
-            DrawerGeometry.PANEL_X_PX
+            geometry.panelX
         }
-        panelLayoutParams.y = DrawerGeometry.PANEL_Y_PX
+        panelLayoutParams.y = geometry.panelY
         panelLayoutParams.width = if (state == PanelWindowState.MOVING) {
-            DrawerGeometry.PANEL_MOTION_WIDTH_PX
+            geometry.panelMotionWidthPx
         } else {
-            DrawerGeometry.PANEL_WIDTH_PX
+            geometry.panelWidthPx
         }
-        panelLayoutParams.height = DrawerGeometry.PANEL_HEIGHT_PX
+        panelLayoutParams.height = geometry.panelHeightPx
         panelLayoutParams.flags = panelFlags(notTouchable = state != PanelWindowState.OPEN)
     }
 
     private fun handlePanelTouch(event: MotionEvent): Boolean {
         if (event.actionMasked != MotionEvent.ACTION_OUTSIDE) return false
         if (stableDock == DrawerDock.OPEN &&
-            !DrawerGeometry.isPointInsideTrigger(event.rawX, event.rawY, openDistancePx)
+            !geometry.isPointInsideTrigger(event.rawX, event.rawY, openDistancePx)
         ) {
             close()
         }
@@ -324,10 +342,17 @@ class DrawerWindowController(
                 View(context).apply {
                     refreshHandleBackground(this)
                     triggerHandleView = this
+                    pivotX = 0f
+                    pivotY = 0f
+                    scaleX = geometry.scale
+                    scaleY = geometry.scale
                 },
-                FrameLayout.LayoutParams(DrawerGeometry.HANDLE_WIDTH_PX, DrawerGeometry.HANDLE_HEIGHT_PX).apply {
-                    leftMargin = DrawerGeometry.HANDLE_LEFT_PX
-                    topMargin = DrawerGeometry.HANDLE_TOP_PX
+                FrameLayout.LayoutParams(
+                    DrawerGeometry.DESIGN_HANDLE_WIDTH_PX,
+                    DrawerGeometry.DESIGN_HANDLE_HEIGHT_PX,
+                ).apply {
+                    leftMargin = geometry.handleLeftPx
+                    topMargin = geometry.handleTopPx
                 },
             )
             setOnClickListener {
@@ -356,27 +381,50 @@ class DrawerWindowController(
     }
 
     private fun createTriggerLayoutParams() = WindowManager.LayoutParams(
-        DrawerGeometry.TRIGGER_WIDTH_PX,
-        DrawerGeometry.TRIGGER_HEIGHT_PX,
+        geometry.triggerWidthPx,
+        geometry.triggerHeightPx,
         overlayWindowType(),
         triggerFlags(),
         PixelFormat.TRANSLUCENT,
     ).apply {
         gravity = Gravity.TOP or Gravity.START
-        x = DrawerGeometry.CLOSED_TRIGGER_X_PX
-        y = DrawerGeometry.TRIGGER_Y_PX
+        x = geometry.closedTriggerX
+        y = geometry.triggerY
     }
 
     private fun createPanelLayoutParams() = WindowManager.LayoutParams(
-        DrawerGeometry.PANEL_WIDTH_PX,
-        DrawerGeometry.PANEL_HEIGHT_PX,
+        geometry.panelWidthPx,
+        geometry.panelHeightPx,
         overlayWindowType(),
         panelFlags(notTouchable = true),
         PixelFormat.TRANSLUCENT,
     ).apply {
         gravity = Gravity.TOP or Gravity.START
-        x = DrawerGeometry.SCREEN_WIDTH_PX
-        y = DrawerGeometry.PANEL_Y_PX
+        x = geometry.screenWidthPx
+        y = geometry.panelY
+    }
+
+    private fun syncTriggerGeometry() {
+        val handleLayoutParams = triggerHandleView.layoutParams as FrameLayout.LayoutParams
+        handleLayoutParams.width = DrawerGeometry.DESIGN_HANDLE_WIDTH_PX
+        handleLayoutParams.height = DrawerGeometry.DESIGN_HANDLE_HEIGHT_PX
+        handleLayoutParams.leftMargin = geometry.handleLeftPx
+        handleLayoutParams.topMargin = geometry.handleTopPx
+        triggerHandleView.layoutParams = handleLayoutParams
+        triggerHandleView.scaleX = geometry.scale
+        triggerHandleView.scaleY = geometry.scale
+        triggerLayoutParams.width = geometry.triggerWidthPx
+        triggerLayoutParams.height = geometry.triggerHeightPx
+        triggerLayoutParams.y = geometry.triggerY
+    }
+
+    @Suppress("DEPRECATION")
+    private fun readDisplayGeometry(): DrawerGeometry.Spec {
+        val realSize = Point()
+        windowManager.defaultDisplay.getRealSize(realSize)
+        val widthPx = if (realSize.x > 0) realSize.x else context.resources.displayMetrics.widthPixels
+        val heightPx = if (realSize.y > 0) realSize.y else context.resources.displayMetrics.heightPixels
+        return DrawerGeometry.forDisplay(widthPx, heightPx)
     }
 
     private fun overlayWindowType(): Int = WindowManager.LayoutParams.TYPE_APPLICATION_OVERLAY

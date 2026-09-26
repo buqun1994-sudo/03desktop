@@ -48,12 +48,14 @@ DEVICE_MODEL="$($ANDROID_ADB_BIN shell getprop ro.product.model | tr -d '\r')"
 DEVICE_SDK="$($ANDROID_ADB_BIN shell getprop ro.build.version.sdk | tr -d '\r')"
 DEVICE_SIZE="$($ANDROID_ADB_BIN shell wm size | tr -d '\r')"
 
-if [[ "$DEVICE_MODEL" != "S56_HQX" || "$DEVICE_SDK" != "28" || "$DEVICE_SIZE" != *"1920x1080"* ]]; then
-    echo "设备基线不匹配：model=$DEVICE_MODEL sdk=$DEVICE_SDK size=$DEVICE_SIZE" >&2
+if [[ "$DEVICE_SDK" != "28" ]] || {
+    [[ "$DEVICE_SIZE" != *"1920x1080"* && "$DEVICE_SIZE" != *"2560x1440"* ]]
+}; then
+    echo "设备基线不匹配：model=$DEVICE_MODEL sdk=$DEVICE_SDK size=$DEVICE_SIZE；支持 Android 9 与 1920x1080/2560x1440 显示画布" >&2
     exit 1
 fi
 
-echo "目标车机：$DEVICE_MODEL / Android SDK $DEVICE_SDK / 1920x1080"
+echo "目标车机：$DEVICE_MODEL / Android SDK $DEVICE_SDK / $DEVICE_SIZE"
 echo "安装包：$DEBUG_APK"
 "$ANDROID_ADB_BIN" install -r -g "$DEBUG_APK"
 "$ANDROID_ADB_BIN" shell appops set "$EXPECTED_PACKAGE" REQUEST_INSTALL_PACKAGES allow

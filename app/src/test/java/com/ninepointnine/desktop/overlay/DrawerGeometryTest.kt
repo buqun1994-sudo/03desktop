@@ -1,65 +1,106 @@
 package com.ninepointnine.desktop.overlay
 
 import com.ninepointnine.desktop.model.DrawerDock
-import com.ninepointnine.desktop.model.DrawerMotion
 import org.junit.Assert.assertEquals
+import org.junit.Assert.assertTrue
 import org.junit.Test
 
 class DrawerGeometryTest {
-    @Test
-    fun `clamps all distances and maps endpoint coordinates`() {
-        assertEquals(0, DrawerGeometry.clampOpenDistance(-1))
-        assertEquals(0, DrawerGeometry.clampOpenDistance(0))
-        assertEquals(610, DrawerGeometry.clampOpenDistance(610))
-        assertEquals(610, DrawerGeometry.clampOpenDistance(611))
-        assertEquals(DrawerGeometry.PANEL_TRAVEL_PX, DrawerMotion.MAX_OPEN_DISTANCE_PX)
-        assertEquals(1890, DrawerGeometry.PANEL_X_PX + DrawerGeometry.PANEL_WIDTH_PX)
-        assertEquals(30, DrawerGeometry.PANEL_EDGE_GAP_PX)
-        assertEquals(1920, DrawerGeometry.PANEL_X_PX + DrawerGeometry.PANEL_MOTION_WIDTH_PX)
-        assertEquals(1900f, DrawerGeometry.PANEL_X_PX + DrawerGeometry.panelTranslationX(0), 0.001f)
-        assertEquals(1870, DrawerGeometry.triggerX(0))
-        assertEquals(1770, DrawerGeometry.triggerX(100))
-        assertEquals(1769, DrawerGeometry.triggerX(101))
-        assertEquals(1571, DrawerGeometry.triggerX(299))
-        assertEquals(1570, DrawerGeometry.triggerX(300))
-        assertEquals(1260, DrawerGeometry.triggerX(610))
-        assertEquals(610f, DrawerGeometry.panelTranslationX(0), 0.001f)
-        assertEquals(510f, DrawerGeometry.panelTranslationX(100), 0.001f)
-        assertEquals(509f, DrawerGeometry.panelTranslationX(101), 0.001f)
-        assertEquals(311f, DrawerGeometry.panelTranslationX(299), 0.001f)
-        assertEquals(310f, DrawerGeometry.panelTranslationX(300), 0.001f)
-        assertEquals(0f, DrawerGeometry.panelTranslationX(610), 0.001f)
+    private val design = DrawerGeometry.forDisplay(1920, 1080)
+    private val x3p = DrawerGeometry.forDisplay(2560, 1440)
 
-        listOf(0, 100, 101, 299, 300, 610).forEach { distancePx ->
-            val panelVisibleLeft = DrawerGeometry.PANEL_X_PX +
-                DrawerGeometry.panelTranslationX(distancePx)
-            val handleLeft = DrawerGeometry.triggerX(distancePx) + DrawerGeometry.HANDLE_LEFT_PX
-            assertEquals(2f, handleLeft - panelVisibleLeft, 0.51f)
+    @Test
+    fun `design canvas preserves existing geometry`() {
+        assertEquals(1f, design.scale, 0.001f)
+        assertEquals(600, design.panelWidthPx)
+        assertEquals(810, design.panelHeightPx)
+        assertEquals(30, design.panelEdgeGapPx)
+        assertEquals(1290, design.panelX)
+        assertEquals(630, design.panelMotionWidthPx)
+        assertEquals(20, design.panelClosedRevealPx)
+        assertEquals(610, design.maxOpenDistancePx)
+        assertEquals(90, design.panelY)
+        assertEquals(60, design.triggerWidthPx)
+        assertEquals(1870, design.closedTriggerX)
+        assertEquals(1260, design.triggerX(design.maxOpenDistancePx))
+        assertEquals(6, design.handleWidthPx)
+        assertEquals(150, design.handleHeightPx)
+    }
+
+    @Test
+    fun `x3p canvas scales the full design and keeps the right edge adaptive`() {
+        assertEquals(4f / 3f, x3p.scale, 0.001f)
+        assertEquals(800, x3p.panelWidthPx)
+        assertEquals(1080, x3p.panelHeightPx)
+        assertEquals(40, x3p.panelEdgeGapPx)
+        assertEquals(1720, x3p.panelX)
+        assertEquals(2560, x3p.panelX + x3p.panelWidthPx + x3p.panelEdgeGapPx)
+        assertEquals(840, x3p.panelMotionWidthPx)
+        assertEquals(27, x3p.panelClosedRevealPx)
+        assertEquals(813, x3p.maxOpenDistancePx)
+        assertEquals(80, x3p.triggerWidthPx)
+        assertEquals(2493, x3p.closedTriggerX)
+        assertEquals(8, x3p.handleWidthPx)
+        assertEquals(200, x3p.handleHeightPx)
+    }
+
+    @Test
+    fun `non design aspect ratio fits within both axes`() {
+        val geometry = DrawerGeometry.forDisplay(1920, 1200)
+
+        assertEquals(1f, geometry.scale, 0.001f)
+        assertTrue(geometry.panelX >= 0)
+        assertTrue(geometry.panelY + geometry.panelHeightPx <= geometry.screenHeightPx)
+        assertEquals(30, geometry.panelEdgeGapPx)
+    }
+
+    @Test
+    fun `smaller design canvas scales down without crossing the screen edge`() {
+        val geometry = DrawerGeometry.forDisplay(1280, 720)
+
+        assertEquals(2f / 3f, geometry.scale, 0.001f)
+        assertEquals(400, geometry.panelWidthPx)
+        assertEquals(540, geometry.panelHeightPx)
+        assertEquals(20, geometry.panelEdgeGapPx)
+        assertEquals(860, geometry.panelX)
+        assertEquals(1280, geometry.panelX + geometry.panelWidthPx + geometry.panelEdgeGapPx)
+        assertTrue(geometry.panelY + geometry.panelHeightPx <= geometry.screenHeightPx)
+    }
+
+    @Test
+    fun `distance endpoints keep panel and trigger aligned`() {
+        listOf(design, x3p).forEach { geometry ->
+            listOf(0, 100, geometry.maxOpenDistancePx / 2, geometry.maxOpenDistancePx)
+                .forEach { distancePx ->
+                    val panelVisibleLeft = geometry.panelX + geometry.panelTranslationX(distancePx)
+                    val handleLeft = geometry.triggerX(distancePx) + geometry.handleLeftPx
+                    assertEquals(geometry.scale * 2f, handleLeft - panelVisibleLeft, 0.51f)
+                }
         }
     }
 
     @Test
-    fun `settles boundaries exactly as specified`() {
-        assertEquals(DrawerDock.CLOSED, DrawerGeometry.settleFromClosed(0))
-        assertEquals(DrawerDock.OPEN, DrawerGeometry.settleFromClosed(1))
-        assertEquals(DrawerDock.OPEN, DrawerGeometry.settleFromOpen(100))
-        assertEquals(DrawerDock.CLOSED, DrawerGeometry.settleFromOpen(101))
-    }
+    fun `settle thresholds and trigger hit testing use runtime geometry`() {
+        assertEquals(DrawerDock.CLOSED, x3p.settleFromClosed(0))
+        assertEquals(DrawerDock.OPEN, x3p.settleFromClosed(x3p.openReleaseThresholdPx))
+        assertEquals(DrawerDock.OPEN, x3p.settleFromOpen(x3p.closePullThresholdPx))
+        assertEquals(DrawerDock.CLOSED, x3p.settleFromOpen(x3p.closePullThresholdPx + 1))
+        assertEquals(DrawerDock.CLOSED, x3p.recoverDock(x3p.recoveryOpenThresholdPx - 1))
+        assertEquals(DrawerDock.OPEN, x3p.recoverDock(x3p.recoveryOpenThresholdPx))
 
-    @Test
-    fun `identifies the open trigger without expanding its touch rectangle`() {
-        assertEquals(true, DrawerGeometry.isPointInsideTrigger(1260f, 90f, 610))
-        assertEquals(true, DrawerGeometry.isPointInsideTrigger(1319.9f, 899.9f, 610))
-        assertEquals(false, DrawerGeometry.isPointInsideTrigger(1259.9f, 90f, 610))
-        assertEquals(false, DrawerGeometry.isPointInsideTrigger(1320f, 90f, 610))
-        assertEquals(false, DrawerGeometry.isPointInsideTrigger(1260f, 89.9f, 610))
-        assertEquals(false, DrawerGeometry.isPointInsideTrigger(1260f, 900f, 610))
+        assertTrue(
+            x3p.isPointInsideTrigger(
+                x3p.triggerX(x3p.maxOpenDistancePx).toFloat(),
+                x3p.triggerY.toFloat(),
+                x3p.maxOpenDistancePx,
+            ),
+        )
+        assertTrue(
+            x3p.isPointInsideTrigger(
+                x3p.triggerX(x3p.maxOpenDistancePx) + x3p.triggerWidthPx - 0.1f,
+                x3p.triggerY + x3p.triggerHeightPx - 0.1f,
+                x3p.maxOpenDistancePx,
+            ),
+        )
     }
-
-    @Test
-    fun `unknown intermediary states recover at midpoint`() {
-        assertEquals(DrawerDock.CLOSED, DrawerGeometry.recoverDock(299))
-        assertEquals(DrawerDock.OPEN, DrawerGeometry.recoverDock(300))
-    }
-
 }

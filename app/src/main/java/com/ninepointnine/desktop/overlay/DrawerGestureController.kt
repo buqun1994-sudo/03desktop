@@ -10,6 +10,7 @@ class DrawerGestureController(
     private val longPressTimeoutMillis: Long,
     private val postDelayed: (Runnable, Long) -> Unit,
     private val removeCallbacks: (Runnable) -> Unit,
+    private val geometryProvider: () -> DrawerGeometry.Spec,
     private val motionProvider: () -> MotionSnapshot,
     private val listener: Listener,
 ) {
@@ -54,7 +55,7 @@ class DrawerGestureController(
         val snapshot = motionProvider()
         downX = rawX
         downY = rawY
-        startDistancePx = DrawerGeometry.clampOpenDistance(snapshot.openDistancePx)
+        startDistancePx = geometryProvider().clampOpenDistance(snapshot.openDistancePx)
         startDock = snapshot.stableDock
         gestureActive = true
         if (allowsNavigation()) postDelayed(longPressCallback, longPressTimeoutMillis)
@@ -88,7 +89,7 @@ class DrawerGestureController(
         }
 
         if (direction == Direction.HORIZONTAL) {
-            listener.onDistanceChanged(DrawerGeometry.clampOpenDistance((startDistancePx - deltaX).roundToInt()))
+            listener.onDistanceChanged(geometryProvider().clampOpenDistance((startDistancePx - deltaX).roundToInt()))
         }
     }
 
@@ -121,9 +122,9 @@ class DrawerGestureController(
                 val destination = if (cancelled) {
                     startDock
                 } else if (startDock == DrawerDock.CLOSED) {
-                    DrawerGeometry.settleFromClosed(motionProvider().openDistancePx)
+                    geometryProvider().settleFromClosed(motionProvider().openDistancePx)
                 } else {
-                    DrawerGeometry.settleFromOpen(startDistancePx - motionProvider().openDistancePx)
+                    geometryProvider().settleFromOpen(startDistancePx - motionProvider().openDistancePx)
                 }
                 listener.onSettleRequested(destination)
             }

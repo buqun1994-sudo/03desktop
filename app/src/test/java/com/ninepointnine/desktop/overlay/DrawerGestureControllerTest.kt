@@ -65,6 +65,7 @@ class DrawerGestureControllerTest {
             longPressTimeoutMillis = 500L,
             postDelayed = { callback, _ -> pending += callback },
             removeCallbacks = { callback -> pending.remove(callback) },
+            geometryProvider = { DrawerGeometry.forDisplay(1920, 1080) },
             motionProvider = { snapshot },
             listener = object : DrawerGestureController.Listener {
                 override fun onGestureDown(): Boolean = false
