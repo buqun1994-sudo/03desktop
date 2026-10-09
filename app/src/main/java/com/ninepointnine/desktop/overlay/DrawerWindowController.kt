@@ -30,6 +30,7 @@ class DrawerWindowController(
     private val touchSlopPx = ViewConfiguration.get(context).scaledTouchSlop.toFloat()
     private var geometry = readDisplayGeometry()
     private lateinit var triggerHandleView: View
+    private lateinit var triggerHandleTouchView: View
     private val triggerView = createTriggerView(context)
     private val triggerLayoutParams = createTriggerLayoutParams()
     private val panelLayoutParams = createPanelLayoutParams()
@@ -48,8 +49,8 @@ class DrawerWindowController(
     private val handleGestureController = DrawerGestureController(
         touchSlopPx = touchSlopPx,
         longPressTimeoutMillis = ViewConfiguration.getLongPressTimeout().toLong(),
-        postDelayed = { callback, delay -> triggerHandleView.postDelayed(callback, delay) },
-        removeCallbacks = { triggerHandleView.removeCallbacks(it) },
+        postDelayed = { callback, delay -> triggerHandleTouchView.postDelayed(callback, delay) },
+        removeCallbacks = { triggerHandleTouchView.removeCallbacks(it) },
         geometryProvider = { geometry },
         motionProvider = { DrawerGestureController.MotionSnapshot(openDistancePx, stableDock) },
         navigationEnabled = true,
@@ -158,7 +159,7 @@ class DrawerWindowController(
     }
 
     override fun onClosedTriggerTapped() {
-        triggerHandleView.performClick()
+        triggerHandleTouchView.performClick()
     }
 
     override fun onClosedTriggerLongPressed() {
@@ -357,6 +358,9 @@ class DrawerWindowController(
             pivotY = 0f
             scaleX = geometry.scale
             scaleY = geometry.scale
+        }
+        val handleTouchView = FrameLayout(context).apply {
+            triggerHandleTouchView = this
             setOnTouchListener { _, event: MotionEvent ->
                 if (pendingAfterClose == null) {
                     when (event.actionMasked) {
@@ -370,22 +374,32 @@ class DrawerWindowController(
                 }
                 true
             }
-        }
-        return FrameLayout(context).apply {
-            setBackgroundColor(android.graphics.Color.TRANSPARENT)
             addView(
                 handleView,
                 FrameLayout.LayoutParams(
                     DrawerGeometry.DESIGN_HANDLE_WIDTH_PX,
                     DrawerGeometry.DESIGN_HANDLE_HEIGHT_PX,
                 ).apply {
-                    leftMargin = geometry.handleLeftPx
-                    topMargin = geometry.handleTopPx
+                    leftMargin = geometry.handleLeftPx - geometry.handleTouchLeftPx
+                    topMargin = geometry.handleTopPx - geometry.handleTouchTopPx
                 },
             )
-            handleView.setOnClickListener {
+            setOnClickListener {
                 if (onClosedTriggerBackRequested()) playNavigationFeedback()
             }
+        }
+        return FrameLayout(context).apply {
+            setBackgroundColor(android.graphics.Color.TRANSPARENT)
+            addView(
+                handleTouchView,
+                FrameLayout.LayoutParams(
+                    geometry.handleTouchWidthPx,
+                    geometry.handleTouchHeightPx,
+                ).apply {
+                    leftMargin = geometry.handleTouchLeftPx
+                    topMargin = geometry.handleTouchTopPx
+                },
+            )
             setOnTouchListener { _, event: MotionEvent ->
                 if (pendingAfterClose == null) {
                     when (event.actionMasked) {
@@ -433,11 +447,18 @@ class DrawerWindowController(
     }
 
     private fun syncTriggerGeometry() {
+        val touchLayoutParams = triggerHandleTouchView.layoutParams as FrameLayout.LayoutParams
+        touchLayoutParams.width = geometry.handleTouchWidthPx
+        touchLayoutParams.height = geometry.handleTouchHeightPx
+        touchLayoutParams.leftMargin = geometry.handleTouchLeftPx
+        touchLayoutParams.topMargin = geometry.handleTouchTopPx
+        triggerHandleTouchView.layoutParams = touchLayoutParams
+
         val handleLayoutParams = triggerHandleView.layoutParams as FrameLayout.LayoutParams
         handleLayoutParams.width = DrawerGeometry.DESIGN_HANDLE_WIDTH_PX
         handleLayoutParams.height = DrawerGeometry.DESIGN_HANDLE_HEIGHT_PX
-        handleLayoutParams.leftMargin = geometry.handleLeftPx
-        handleLayoutParams.topMargin = geometry.handleTopPx
+        handleLayoutParams.leftMargin = geometry.handleLeftPx - geometry.handleTouchLeftPx
+        handleLayoutParams.topMargin = geometry.handleTopPx - geometry.handleTouchTopPx
         triggerHandleView.layoutParams = handleLayoutParams
         triggerHandleView.scaleX = geometry.scale
         triggerHandleView.scaleY = geometry.scale

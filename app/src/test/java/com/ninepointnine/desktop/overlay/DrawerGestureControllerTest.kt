@@ -19,6 +19,17 @@ class DrawerGestureControllerTest {
     }
 
     @Test
+    fun `handle tap tolerates movement within touch slop`() {
+        val harness = Harness()
+
+        harness.controller.onDown(1875f, 400f)
+        harness.controller.onMove(1870f, 403f)
+        harness.controller.onUp(1870f, 403f)
+
+        assertEquals(listOf("tap"), harness.events)
+    }
+
+    @Test
     fun `closed long press requests home and suppresses tap on release`() {
         val harness = Harness()
 

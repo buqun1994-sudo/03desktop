@@ -25,6 +25,10 @@ class DrawerGeometryTest {
         assertEquals(1260, design.triggerX(design.maxOpenDistancePx))
         assertEquals(6, design.handleWidthPx)
         assertEquals(150, design.handleHeightPx)
+        assertEquals(30, design.handleTouchWidthPx)
+        assertEquals(180, design.handleTouchHeightPx)
+        assertEquals(20, design.handleTouchLeftPx)
+        assertEquals(315, design.handleTouchTopPx)
     }
 
     @Test

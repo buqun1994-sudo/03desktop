@@ -23,6 +23,10 @@ object DrawerGeometry {
     const val DESIGN_HANDLE_HEIGHT_PX = 150
     const val DESIGN_HANDLE_LEFT_PX = 32
     const val DESIGN_HANDLE_TOP_PX = 330
+    const val DESIGN_HANDLE_TOUCH_WIDTH_PX = 30
+    const val DESIGN_HANDLE_TOUCH_HEIGHT_PX = 180
+    const val DESIGN_HANDLE_TOUCH_LEFT_PX = 20
+    const val DESIGN_HANDLE_TOUCH_TOP_PX = 315
     const val DESIGN_OPEN_RELEASE_THRESHOLD_PX = 1
     const val DESIGN_RECOVERY_OPEN_THRESHOLD_PX = 300
     const val DESIGN_CLOSE_PULL_THRESHOLD_PX = 100
@@ -48,6 +52,10 @@ object DrawerGeometry {
         val handleHeightPx: Int,
         val handleLeftPx: Int,
         val handleTopPx: Int,
+        val handleTouchWidthPx: Int,
+        val handleTouchHeightPx: Int,
+        val handleTouchLeftPx: Int,
+        val handleTouchTopPx: Int,
         val openReleaseThresholdPx: Int,
         val recoveryOpenThresholdPx: Int,
         val closePullThresholdPx: Int,
@@ -88,6 +96,7 @@ object DrawerGeometry {
             screenHeightPx.toFloat() / DESIGN_SCREEN_HEIGHT_PX,
         )
         fun scaled(valuePx: Int): Int = (valuePx * scale).roundToInt().coerceAtLeast(1)
+        fun scaledPosition(valuePx: Int): Int = (valuePx * scale).roundToInt().coerceAtLeast(0)
 
         val panelWidthPx = scaled(DESIGN_PANEL_WIDTH_PX)
         val panelHeightPx = scaled(DESIGN_PANEL_HEIGHT_PX)
@@ -116,6 +125,10 @@ object DrawerGeometry {
             handleHeightPx = scaled(DESIGN_HANDLE_HEIGHT_PX),
             handleLeftPx = scaled(DESIGN_HANDLE_LEFT_PX),
             handleTopPx = scaled(DESIGN_HANDLE_TOP_PX),
+            handleTouchWidthPx = scaled(DESIGN_HANDLE_TOUCH_WIDTH_PX),
+            handleTouchHeightPx = scaled(DESIGN_HANDLE_TOUCH_HEIGHT_PX),
+            handleTouchLeftPx = scaledPosition(DESIGN_HANDLE_TOUCH_LEFT_PX),
+            handleTouchTopPx = scaledPosition(DESIGN_HANDLE_TOUCH_TOP_PX),
             openReleaseThresholdPx = scaled(DESIGN_OPEN_RELEASE_THRESHOLD_PX),
             recoveryOpenThresholdPx = scaled(DESIGN_RECOVERY_OPEN_THRESHOLD_PX),
             closePullThresholdPx = scaled(DESIGN_CLOSE_PULL_THRESHOLD_PX),
