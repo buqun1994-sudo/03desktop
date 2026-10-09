@@ -12,6 +12,7 @@ class DrawerGestureController(
     private val removeCallbacks: (Runnable) -> Unit,
     private val geometryProvider: () -> DrawerGeometry.Spec,
     private val motionProvider: () -> MotionSnapshot,
+    private val navigationEnabled: Boolean = true,
     private val listener: Listener,
 ) {
     data class MotionSnapshot(
@@ -111,7 +112,7 @@ class DrawerGestureController(
     }
 
     private fun allowsNavigation(): Boolean =
-        !interruptedAnimation && startDock == DrawerDock.CLOSED && startDistancePx == 0
+        navigationEnabled && !interruptedAnimation && startDock == DrawerDock.CLOSED && startDistancePx == 0
 
     private fun finishGesture(cancelled: Boolean) {
         if (!gestureActive) return

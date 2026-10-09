@@ -35,13 +35,24 @@ class DrawerWindowController(
     private val panelLayoutParams = createPanelLayoutParams()
     private val frameScheduler = Choreographer.getInstance()
     private val occupancyTracker = DrawerSurfaceOccupancyTracker(onDesktopSurfaceOccupancyChanged)
-    private val gestureController = DrawerGestureController(
+    private val swipeGestureController = DrawerGestureController(
         touchSlopPx = touchSlopPx,
         longPressTimeoutMillis = ViewConfiguration.getLongPressTimeout().toLong(),
         postDelayed = { callback, delay -> triggerView.postDelayed(callback, delay) },
         removeCallbacks = { triggerView.removeCallbacks(it) },
         geometryProvider = { geometry },
         motionProvider = { DrawerGestureController.MotionSnapshot(openDistancePx, stableDock) },
+        navigationEnabled = false,
+        listener = this,
+    )
+    private val handleGestureController = DrawerGestureController(
+        touchSlopPx = touchSlopPx,
+        longPressTimeoutMillis = ViewConfiguration.getLongPressTimeout().toLong(),
+        postDelayed = { callback, delay -> triggerHandleView.postDelayed(callback, delay) },
+        removeCallbacks = { triggerHandleView.removeCallbacks(it) },
+        geometryProvider = { geometry },
+        motionProvider = { DrawerGestureController.MotionSnapshot(openDistancePx, stableDock) },
+        navigationEnabled = true,
         listener = this,
     )
 
@@ -71,7 +82,8 @@ class DrawerWindowController(
     }
 
     fun close(afterClosed: (() -> Unit)? = null) {
-        gestureController.cancel()
+        swipeGestureController.cancel()
+        handleGestureController.cancel()
         pendingAfterClose = combineAfterClose(pendingAfterClose, afterClosed)
         if (stableDock == DrawerDock.CLOSED && animator == null && openDistancePx == 0) {
             applyPanelWindowState(PanelWindowState.PARKED)
@@ -85,7 +97,8 @@ class DrawerWindowController(
     fun isOpen(): Boolean = stableDock == DrawerDock.OPEN
 
     fun onConfigurationChanged() {
-        gestureController.cancel()
+        swipeGestureController.cancel()
+        handleGestureController.cancel()
         val previousMaxOpenDistancePx = geometry.maxOpenDistancePx
         val openProgress = if (previousMaxOpenDistancePx == 0) {
             0f
@@ -145,7 +158,7 @@ class DrawerWindowController(
     }
 
     override fun onClosedTriggerTapped() {
-        triggerView.performClick()
+        triggerHandleView.performClick()
     }
 
     override fun onClosedTriggerLongPressed() {
@@ -294,7 +307,8 @@ class DrawerWindowController(
     }
 
     private fun removeTrigger(allowFailureCallback: Boolean = true) {
-        gestureController.cancel()
+        swipeGestureController.cancel()
+        handleGestureController.cancel()
         if (!triggerAttached) return
         triggerAttached = false
         triggerHandleView.removeCallbacks(resetNavigationFeedback)
@@ -336,17 +350,31 @@ class DrawerWindowController(
     }
 
     private fun createTriggerView(context: Context): View {
+        val handleView = View(context).apply {
+            refreshHandleBackground(this)
+            triggerHandleView = this
+            pivotX = 0f
+            pivotY = 0f
+            scaleX = geometry.scale
+            scaleY = geometry.scale
+            setOnTouchListener { _, event: MotionEvent ->
+                if (pendingAfterClose == null) {
+                    when (event.actionMasked) {
+                        MotionEvent.ACTION_DOWN -> handleGestureController.onDown(event.rawX, event.rawY)
+                        MotionEvent.ACTION_MOVE -> handleGestureController.onMove(event.rawX, event.rawY)
+                        MotionEvent.ACTION_UP -> handleGestureController.onUp(event.rawX, event.rawY)
+                        MotionEvent.ACTION_CANCEL,
+                        MotionEvent.ACTION_POINTER_DOWN,
+                        -> handleGestureController.onCancel()
+                    }
+                }
+                true
+            }
+        }
         return FrameLayout(context).apply {
             setBackgroundColor(android.graphics.Color.TRANSPARENT)
             addView(
-                View(context).apply {
-                    refreshHandleBackground(this)
-                    triggerHandleView = this
-                    pivotX = 0f
-                    pivotY = 0f
-                    scaleX = geometry.scale
-                    scaleY = geometry.scale
-                },
+                handleView,
                 FrameLayout.LayoutParams(
                     DrawerGeometry.DESIGN_HANDLE_WIDTH_PX,
                     DrawerGeometry.DESIGN_HANDLE_HEIGHT_PX,
@@ -355,18 +383,18 @@ class DrawerWindowController(
                     topMargin = geometry.handleTopPx
                 },
             )
-            setOnClickListener {
+            handleView.setOnClickListener {
                 if (onClosedTriggerBackRequested()) playNavigationFeedback()
             }
             setOnTouchListener { _, event: MotionEvent ->
                 if (pendingAfterClose == null) {
                     when (event.actionMasked) {
-                        MotionEvent.ACTION_DOWN -> gestureController.onDown(event.rawX, event.rawY)
-                        MotionEvent.ACTION_MOVE -> gestureController.onMove(event.rawX, event.rawY)
-                        MotionEvent.ACTION_UP -> gestureController.onUp(event.rawX, event.rawY)
+                        MotionEvent.ACTION_DOWN -> swipeGestureController.onDown(event.rawX, event.rawY)
+                        MotionEvent.ACTION_MOVE -> swipeGestureController.onMove(event.rawX, event.rawY)
+                        MotionEvent.ACTION_UP -> swipeGestureController.onUp(event.rawX, event.rawY)
                         MotionEvent.ACTION_CANCEL,
                         MotionEvent.ACTION_POINTER_DOWN,
-                        -> gestureController.onCancel()
+                        -> swipeGestureController.onCancel()
                     }
                 }
                 true

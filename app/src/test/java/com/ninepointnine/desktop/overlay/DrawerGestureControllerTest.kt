@@ -56,7 +56,33 @@ class DrawerGestureControllerTest {
         assertTrue(harness.events.isEmpty())
     }
 
-    private class Harness {
+    @Test
+    fun `swipe heat zone tap does not request navigation or schedule long press`() {
+        val harness = Harness(navigationEnabled = false)
+
+        harness.controller.onDown(1875f, 400f)
+        harness.controller.onUp(1875f, 400f)
+        harness.runLongPress()
+
+        assertTrue(harness.events.isEmpty())
+        assertTrue(harness.pending.isEmpty())
+    }
+
+    @Test
+    fun `swipe heat zone still opens on horizontal swipe`() {
+        val harness = Harness(navigationEnabled = false)
+
+        harness.controller.onDown(1875f, 400f)
+        harness.controller.onMove(1860f, 400f)
+        harness.controller.onMove(1775f, 400f)
+        harness.controller.onUp(1775f, 400f)
+
+        assertEquals(listOf("start:CLOSED_TRIGGER", "distance:15", "distance:100", "settle:OPEN"), harness.events)
+    }
+
+    private class Harness(
+        navigationEnabled: Boolean = true,
+    ) {
         val events = mutableListOf<String>()
         val pending = mutableListOf<Runnable>()
         var snapshot = DrawerGestureController.MotionSnapshot(0, DrawerDock.CLOSED)
@@ -67,6 +93,7 @@ class DrawerGestureControllerTest {
             removeCallbacks = { callback -> pending.remove(callback) },
             geometryProvider = { DrawerGeometry.forDisplay(1920, 1080) },
             motionProvider = { snapshot },
+            navigationEnabled = navigationEnabled,
             listener = object : DrawerGestureController.Listener {
                 override fun onGestureDown(): Boolean = false
 
