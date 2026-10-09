@@ -231,8 +231,13 @@ function collectFiles(directory) {
 for (const file of collectFiles(join(root, "app/src/main"))) {
   if (!/\.(kt|kts|xml|pro)$/.test(file)) continue;
   const source = readFileSync(file, "utf8");
-  if (source.includes("com.tcrrry.desktoplyrics") ||
-      source.includes("com.ninepointnine.desktoplyrics")) {
+  // The boot migration list identifies third-party packages; it does not reuse their app identity.
+  const identitySource = file === join(root, "app/src/main/java/com/ninepointnine/desktop/apps/AutostartStore.kt")
+    ? source.replace(/private val applicationManagedPackages = setOf\([\s\S]*?\n    \)/, (list) =>
+      list.replace(/^\s*"com\.(?:tcrrry|ninepointnine)\.desktoplyrics(?:\.test)?",\s*$/gm, ""))
+    : source;
+  if (identitySource.includes("com.tcrrry.desktoplyrics") ||
+      identitySource.includes("com.ninepointnine.desktoplyrics")) {
     failures.push(`产品源码引用了 03歌词 身份：${file.slice(root.length + 1)}`);
   }
   if (/Settings\.Secure\.put[A-Za-z]*\s*\(/.test(source)) {
