@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/more_app_item"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/more_item_height"
+    android:background="?android:attr/selectableItemBackground"
+    android:clickable="true"
+    android:focusable="true"
+    android:gravity="center_vertical"
+    android:orientation="horizontal"
+    android:paddingLeft="@dimen/icar_spacing_24"
+    android:paddingRight="@dimen/icar_spacing_24">
+
+    <ImageView
+        android:id="@+id/more_app_icon"
+        android:layout_width="@dimen/more_item_icon_size"
+        android:layout_height="@dimen/more_item_icon_size"
+        android:contentDescription="@null"
+        android:scaleType="fitCenter" />
+
+    <TextView
+        android:id="@+id/more_app_label"
+        style="@style/IcarText.Body"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:layout_marginLeft="@dimen/more_item_icon_spacing"
+        android:layout_weight="1"
+        android:ellipsize="end"
+        android:maxLines="1" />
+
+    <CheckBox
+        android:id="@+id/more_app_check"
+        android:layout_width="@dimen/more_item_check_size"
+        android:layout_height="@dimen/more_item_check_size"
+        android:buttonTint="@color/more_action"
+        android:clickable="false"
+        android:focusable="false"
+        android:visibility="gone" />
+</LinearLayout>

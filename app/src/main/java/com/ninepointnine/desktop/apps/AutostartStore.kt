@@ -35,6 +35,14 @@ class AutostartStore(context: Context) {
         return reconciled
     }
 
+    fun observeChanges(onChanged: () -> Unit): () -> Unit {
+        val listener = android.content.SharedPreferences.OnSharedPreferenceChangeListener { _, key ->
+            if (key == KEY_PACKAGES || key == KEY_DISABLED_PACKAGES) onChanged()
+        }
+        preferences.registerOnSharedPreferenceChangeListener(listener)
+        return { preferences.unregisterOnSharedPreferenceChangeListener(listener) }
+    }
+
     private companion object {
         const val FILE_NAME = "autostart"
         const val KEY_PACKAGES = "packages"

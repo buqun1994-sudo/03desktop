@@ -12,5 +12,10 @@
     <color name="drawer_danger_active">#D92D20</color>
     <color name="drawer_handle">#2B000000</color>
     <color name="drawer_handle_active">#E6FFFFFF</color>
+    <color name="more_action">#3F51B5</color>
+    <color name="drawer_hide">#5F6368</color>
+    <color name="more_button_surface">#0D3F51B5</color>
+    <color name="more_button_pressed">#1F3F51B5</color>
+    <color name="more_button_disabled">#14000000</color>
     <color name="install_empty_icon">#66000000</color>
 </resources>

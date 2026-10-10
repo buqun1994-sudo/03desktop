@@ -25,6 +25,7 @@ class DrawerWindowController(
     private val onClosedTriggerBackRequested: () -> Boolean,
     private val onClosedTriggerHomeRequested: () -> Boolean,
     private val onWindowFailure: () -> Unit,
+    private val onPanelClosed: () -> Unit = {},
 ) : DrawerGestureController.Listener {
     private val windowManager = context.getSystemService(WindowManager::class.java)
     private val touchSlopPx = ViewConfiguration.get(context).scaledTouchSlop.toFloat()
@@ -89,6 +90,7 @@ class DrawerWindowController(
         if (stableDock == DrawerDock.CLOSED && animator == null && openDistancePx == 0) {
             applyPanelWindowState(PanelWindowState.PARKED)
             occupancyTracker.onParked(openDistancePx)
+            onPanelClosed()
             completePendingAfterClose()
             return
         }
@@ -213,6 +215,7 @@ class DrawerWindowController(
         } else {
             applyPanelWindowState(PanelWindowState.PARKED)
             occupancyTracker.onParked(openDistancePx)
+            onPanelClosed()
             completePendingAfterClose()
         }
     }

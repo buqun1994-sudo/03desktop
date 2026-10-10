@@ -68,6 +68,7 @@ class OverlayService : Service() {
                     onClosedTriggerBackRequested = GlobalBackActionGateway::performBack,
                     onClosedTriggerHomeRequested = standardFloatingWindowGateway::startHome,
                     onWindowFailure = { releaseAndStop() },
+                    onPanelClosed = { panelController?.onDrawerClosed() },
                 ).also { it.showClosedTrigger() }
             }
         } catch (_: RuntimeException) {

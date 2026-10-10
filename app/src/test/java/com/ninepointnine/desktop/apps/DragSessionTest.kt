@@ -52,6 +52,30 @@ class DragSessionTest {
         assertFalse(isDraggedCenterInsideBounds(1326, 170, 132, 154, 150f, 544f, 1290, 792, 1890, 900))
     }
 
+    @Test
+    fun `remove from desktop discards transient drag order`() {
+        val session = DragSession(entries())
+        session.move(0, 2)
+        val result = session.finish(false, false, true, removeFromDesktopHit = true)
+        assertEquals(entries(), (result as DragResult.RemoveFromDesktop).entries)
+    }
+
+    @Test
+    fun `cancelled removal cannot hide an app`() {
+        val session = DragSession(entries())
+        session.move(0, 2)
+        val result = session.finish(true, false, true, removeFromDesktopHit = true)
+        assertEquals(entries(), (result as DragResult.Restored).entries)
+    }
+
+    @Test
+    fun `side by side targets have distinct center hit regions`() {
+        assertTrue(isDraggedCenterInsideBounds(0, 0, 20, 20, 200f, 800f, 18, 792, 300, 900))
+        assertFalse(isDraggedCenterInsideBounds(0, 0, 20, 20, 200f, 800f, 300, 792, 582, 900))
+        assertFalse(isDraggedCenterInsideBounds(0, 0, 20, 20, 400f, 800f, 18, 792, 300, 900))
+        assertTrue(isDraggedCenterInsideBounds(0, 0, 20, 20, 400f, 800f, 300, 792, 582, 900))
+    }
+
     private fun entries() = listOf("a", "b", "c").map { packageName ->
         AppEntry(
             packageName = packageName,

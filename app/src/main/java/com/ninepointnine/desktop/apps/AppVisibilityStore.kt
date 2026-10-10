@@ -1,45 +1,40 @@
 package com.ninepointnine.desktop.apps
 
 import android.content.Context
-import com.ninepointnine.desktop.model.AppIdentity
 
-/** Stores apps that remain installed but are intentionally removed from the 03 desktop. */
+/** Package-level desktop blacklist, independent of app order and installation identity. */
 class AppVisibilityStore(context: Context) {
-    private val preferences = context.getSharedPreferences(PREFERENCES_NAME, Context.MODE_PRIVATE)
+    private val preferences = context.getSharedPreferences("app_visibility_v1", Context.MODE_PRIVATE)
 
-    fun readHidden(): StoredOrder {
-        val raw = preferences.getString(KEY_HIDDEN_APPS_JSON, null) ?: return StoredOrder(emptyList())
-        val hidden = AppOrderJsonCodec.decode(raw)
-        if (hidden.hadInvalidEntries) {
-            android.util.Log.w(TAG, "Ignoring invalid saved hidden-app entries: ${hidden.invalidEntryCount}")
+    fun readHidden(): Set<String> {
+        if (!preferences.contains(KEY_HIDDEN_PACKAGES) && preferences.contains("hidden_apps_json")) {
+            val legacy = preferences.getString("hidden_apps_json", null)
+            val packages = legacy?.let(AppOrderJsonCodec::decode)?.entries
+                ?.mapTo(linkedSetOf()) { it.packageName }.orEmpty()
+            preferences.edit().putStringSet(KEY_HIDDEN_PACKAGES, packages)
+                .remove("hidden_apps_json").apply()
         }
-        return hidden
+        return preferences.getStringSet(KEY_HIDDEN_PACKAGES, emptySet()).orEmpty().toSet()
     }
 
-    fun hide(identity: AppIdentity) {
-        val current = readHidden().entries
-        if (identity !in current) writeHidden(current + identity)
+    fun hidePackage(packageName: String) {
+        if (packageName.isBlank()) return
+        val current = readHidden()
+        if (packageName !in current) writeHidden(current + packageName)
     }
 
-    fun restore(identities: List<AppIdentity>) {
-        if (identities.isEmpty()) return
-        val restored = identities.toSet()
-        writeHidden(readHidden().entries.filterNot(restored::contains))
+    fun restorePackages(packageNames: Collection<String>) {
+        if (packageNames.isEmpty()) return
+        val current = readHidden()
+        val next = current - packageNames.toSet()
+        if (next != current) writeHidden(next)
     }
 
-    fun writeHiddenForRefresh(entries: List<AppIdentity>) {
-        writeHidden(entries)
-    }
-
-    private fun writeHidden(entries: List<AppIdentity>) {
-        preferences.edit()
-            .putString(KEY_HIDDEN_APPS_JSON, AppOrderJsonCodec.encode(StoredOrder(entries)))
-            .apply()
+    private fun writeHidden(packageNames: Set<String>) {
+        preferences.edit().putStringSet(KEY_HIDDEN_PACKAGES, packageNames.toSet()).apply()
     }
 
     private companion object {
-        const val PREFERENCES_NAME = "app_visibility_v1"
-        const val KEY_HIDDEN_APPS_JSON = "hidden_apps_json"
-        const val TAG = "AppVisibilityStore"
+        const val KEY_HIDDEN_PACKAGES = "hidden_packages"
     }
 }

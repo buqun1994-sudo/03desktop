@@ -33,6 +33,16 @@
     <dimen name="drawer_action_icon_size">@dimen/icar_action_icon_size</dimen>
     <dimen name="drawer_action_icon_spacing">@dimen/icar_spacing_12</dimen>
 
+    <dimen name="drawer_drag_action_text_size">22.75sp</dimen>
+    <dimen name="more_header_height">@dimen/icar_control_height</dimen>
+    <dimen name="more_content_horizontal_padding">42px</dimen>
+    <dimen name="more_item_height">84px</dimen>
+    <dimen name="more_item_icon_size">48px</dimen>
+    <dimen name="more_item_icon_spacing">18px</dimen>
+    <dimen name="more_item_check_size">48px</dimen>
+    <dimen name="more_action_height">84px</dimen>
+    <dimen name="more_action_bottom_margin">24px</dimen>
+
     <dimen name="drawer_panel_radius">@dimen/icar_control_radius</dimen>
     <dimen name="drawer_title_text_size">38sp</dimen>
     <dimen name="drawer_app_label_text_size">24sp</dimen>

@@ -49,8 +49,10 @@ class DragSession(initialEntries: List<AppEntry>) {
         cancelled: Boolean,
         uninstallHit: Boolean,
         canRequestUninstall: Boolean,
+        removeFromDesktopHit: Boolean = false,
     ): DragResult = when {
         cancelled -> DragResult.Restored(initialEntries)
+        removeFromDesktopHit -> DragResult.RemoveFromDesktop(initialEntries)
         uninstallHit && canRequestUninstall -> DragResult.Uninstall(initialEntries)
         hasChanged -> DragResult.Commit(workingEntries.toList())
         else -> DragResult.NoChange
@@ -60,6 +62,7 @@ class DragSession(initialEntries: List<AppEntry>) {
 sealed class DragResult {
     data class Commit(val entries: List<AppEntry>) : DragResult()
     data class Restored(val entries: List<AppEntry>) : DragResult()
+    data class RemoveFromDesktop(val entries: List<AppEntry>) : DragResult()
     data class Uninstall(val entries: List<AppEntry>) : DragResult()
     data object NoChange : DragResult()
 }
@@ -69,14 +72,17 @@ class AppDragController(
     private val adapter: AppGridAdapter,
     private val dragOverlayHost: ViewGroup,
     private val actionSwitcher: ViewAnimator,
+    private val removeFromDesktopTarget: View,
     private val uninstallTarget: View,
     private val onDragStateChanged: (Boolean) -> Unit,
     private val onOrderCommitted: (List<AppEntry>) -> Unit,
+    private val onRemoveFromDesktopRequested: (AppEntry) -> Unit,
     private val onUninstallRequested: (AppEntry) -> Unit,
 ) {
     private var dragSession: DragSession? = null
     private var draggedEntry: AppEntry? = null
     private var draggedItemView: View? = null
+    private var removeFromDesktopHit = false
     private var uninstallHit = false
     private var gestureCancelled = false
     private val targetBounds = Rect()
@@ -125,14 +131,16 @@ class AppDragController(
             draggedEntry = entry
             draggedItemView = viewHolder.itemView
             gestureCancelled = false
+            removeFromDesktopHit = false
             uninstallHit = false
             actionSwitcher.displayedChild = if (entry?.canRequestUninstall == true) {
-                UNINSTALL_ACTION_INDEX
+                DRAG_ACTION_INDEX
             } else {
-                INSTALL_ACTION_INDEX
+                MORE_ACTION_INDEX
             }
             animateScale(dragOverlay.show(viewHolder.itemView), DRAGGED_ITEM_SCALE, animate = true)
-            updateUninstallPresentation(activated = false, animate = false)
+            updateTargetPresentation(removeFromDesktopTarget, activated = false, animate = false)
+            updateTargetPresentation(uninstallTarget, activated = false, animate = false)
             onDragStateChanged(true)
         }
 
@@ -149,10 +157,20 @@ class AppDragController(
             if (actionState != ItemTouchHelper.ACTION_STATE_DRAG || viewHolder.itemView !== draggedItemView) return
             dragOverlay.move(viewHolder.itemView, dX, dY)
             if (!isCurrentlyActive) return
-            val nextUninstallHit = isDraggedCenterInsideTarget(viewHolder.itemView, dX, dY)
+            val nextRemoveFromDesktopHit = isDraggedCenterInsideTarget(
+                viewHolder.itemView,
+                dX,
+                dY,
+                removeFromDesktopTarget,
+            )
+            val nextUninstallHit = isDraggedCenterInsideTarget(viewHolder.itemView, dX, dY, uninstallTarget)
+            if (nextRemoveFromDesktopHit != removeFromDesktopHit) {
+                removeFromDesktopHit = nextRemoveFromDesktopHit
+                updateTargetPresentation(removeFromDesktopTarget, activated = removeFromDesktopHit, animate = true)
+            }
             if (nextUninstallHit != uninstallHit) {
                 uninstallHit = nextUninstallHit
-                updateUninstallPresentation(activated = uninstallHit, animate = true)
+                updateTargetPresentation(uninstallTarget, activated = uninstallHit, animate = true)
             }
         }
 
@@ -170,21 +188,29 @@ class AppDragController(
     }
 
     fun detach() {
+        gestureCancelled = true
+        finishDrag()
         itemTouchHelper.attachToRecyclerView(null)
         recyclerView.removeOnItemTouchListener(touchObserver)
         dragOverlay.clear()
         draggedItemView = null
-        actionSwitcher.displayedChild = INSTALL_ACTION_INDEX
-        updateUninstallPresentation(activated = false, animate = false)
+        actionSwitcher.displayedChild = MORE_ACTION_INDEX
+        updateTargetPresentation(removeFromDesktopTarget, activated = false, animate = false)
+        updateTargetPresentation(uninstallTarget, activated = false, animate = false)
     }
 
-    private fun isDraggedCenterInsideTarget(itemView: View, dX: Float, dY: Float): Boolean {
-        if (actionSwitcher.displayedChild != UNINSTALL_ACTION_INDEX) return false
+    private fun isDraggedCenterInsideTarget(
+        itemView: View,
+        dX: Float,
+        dY: Float,
+        target: View,
+    ): Boolean {
+        if (actionSwitcher.displayedChild != DRAG_ACTION_INDEX) return false
         recyclerBounds.set(0, 0, recyclerView.width, recyclerView.height)
-        targetBounds.set(0, 0, uninstallTarget.width, uninstallTarget.height)
+        targetBounds.set(0, 0, target.width, target.height)
         // Use the same panel-local coordinates as the overlay, including on scaled displays.
         dragOverlayHost.offsetDescendantRectToMyCoords(recyclerView, recyclerBounds)
-        dragOverlayHost.offsetDescendantRectToMyCoords(uninstallTarget, targetBounds)
+        dragOverlayHost.offsetDescendantRectToMyCoords(target, targetBounds)
         return isDraggedCenterInsideBounds(
             itemLeft = recyclerBounds.left + itemView.left,
             itemTop = recyclerBounds.top + itemView.top,
@@ -205,14 +231,25 @@ class AppDragController(
         dragSession = null
         draggedEntry = null
         draggedItemView = null
-        actionSwitcher.displayedChild = INSTALL_ACTION_INDEX
+        actionSwitcher.displayedChild = MORE_ACTION_INDEX
         dragOverlay.clear()
-        updateUninstallPresentation(activated = false, animate = false)
+        updateTargetPresentation(removeFromDesktopTarget, activated = false, animate = false)
+        updateTargetPresentation(uninstallTarget, activated = false, animate = false)
         onDragStateChanged(false)
 
-        when (val result = session.finish(gestureCancelled, uninstallHit, entry?.canRequestUninstall == true)) {
+        when (val result = session.finish(
+            cancelled = gestureCancelled,
+            uninstallHit = uninstallHit,
+            canRequestUninstall = entry?.canRequestUninstall == true,
+            removeFromDesktopHit = removeFromDesktopHit,
+        )) {
             is DragResult.Commit -> onOrderCommitted(result.entries)
             is DragResult.Restored -> adapter.replaceWithSnapshot(result.entries)
+            is DragResult.RemoveFromDesktop -> {
+                adapter.replaceWithSnapshot(result.entries)
+                if (entry != null) onRemoveFromDesktopRequested(entry)
+            }
+
             is DragResult.Uninstall -> {
                 adapter.replaceWithSnapshot(result.entries)
                 if (entry != null) onUninstallRequested(entry)
@@ -220,13 +257,14 @@ class AppDragController(
 
             DragResult.NoChange -> Unit
         }
+        removeFromDesktopHit = false
         uninstallHit = false
         gestureCancelled = false
     }
 
-    private fun updateUninstallPresentation(activated: Boolean, animate: Boolean) {
-        uninstallTarget.isActivated = activated
-        animateScale(uninstallTarget, if (activated) UNINSTALL_HIT_SCALE else NORMAL_SCALE, animate)
+    private fun updateTargetPresentation(target: View, activated: Boolean, animate: Boolean) {
+        target.isActivated = activated
+        animateScale(target, if (activated) ACTION_HIT_SCALE else NORMAL_SCALE, animate)
     }
 
     private fun animateScale(view: View, scale: Float, animate: Boolean) {
@@ -245,11 +283,11 @@ class AppDragController(
     }
 
     private companion object {
-        const val INSTALL_ACTION_INDEX = 0
-        const val UNINSTALL_ACTION_INDEX = 1
+        const val MORE_ACTION_INDEX = 0
+        const val DRAG_ACTION_INDEX = 1
         const val NORMAL_SCALE = 1f
         const val DRAGGED_ITEM_SCALE = 1.06f
-        const val UNINSTALL_HIT_SCALE = 1.06f
+        const val ACTION_HIT_SCALE = 1.06f
         const val DRAG_VISUAL_DURATION_MS = 100L
     }
 }

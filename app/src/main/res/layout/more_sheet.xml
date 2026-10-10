@@ -1,0 +1,88 @@
+<?xml version="1.0" encoding="utf-8"?>
+<FrameLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/more_sheet_root"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    android:background="@drawable/bg_more_sheet"
+    android:clipChildren="true"
+    android:clipToPadding="true"
+    android:paddingTop="@dimen/drawer_top_spacing">
+
+    <LinearLayout
+        android:layout_width="match_parent"
+        android:layout_height="match_parent"
+        android:orientation="vertical"
+        android:paddingLeft="@dimen/more_content_horizontal_padding"
+        android:paddingRight="@dimen/more_content_horizontal_padding">
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/more_header_height">
+
+            <ImageButton
+                android:id="@+id/more_back_button"
+                android:layout_width="@dimen/more_header_height"
+                android:layout_height="@dimen/more_header_height"
+                android:layout_gravity="start|center_vertical"
+                android:background="?android:attr/selectableItemBackgroundBorderless"
+                android:contentDescription="@string/more_back"
+                android:padding="@dimen/icar_spacing_18"
+                android:src="@drawable/ic_more_back" />
+
+            <TextView
+                android:id="@+id/more_page_title"
+                style="@style/IcarText.Title"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:layout_marginLeft="@dimen/more_header_height"
+                android:layout_marginRight="@dimen/more_header_height"
+                android:gravity="center"
+                android:text="@string/more_title" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/more_page_hint"
+            style="@style/IcarText.Caption"
+            android:layout_width="match_parent"
+            android:layout_height="wrap_content"
+            android:layout_marginBottom="@dimen/icar_spacing_18"
+            android:text="@string/more_autostart_hint"
+            android:visibility="gone" />
+
+        <FrameLayout
+            android:layout_width="match_parent"
+            android:layout_height="0px"
+            android:layout_weight="1">
+
+            <androidx.recyclerview.widget.RecyclerView
+                android:id="@+id/more_list"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:clipToPadding="false"
+                android:overScrollMode="never"
+                android:paddingBottom="@dimen/icar_spacing_18" />
+
+            <TextView
+                android:id="@+id/more_empty"
+                style="@style/IcarText.Caption"
+                android:layout_width="match_parent"
+                android:layout_height="match_parent"
+                android:gravity="center"
+                android:visibility="gone" />
+        </FrameLayout>
+
+        <TextView
+            android:id="@+id/more_primary_action"
+            style="@style/IcarText.Action"
+            android:layout_width="match_parent"
+            android:layout_height="@dimen/more_action_height"
+            android:layout_marginBottom="@dimen/more_action_bottom_margin"
+            android:background="@drawable/bg_more_primary_action"
+            android:clickable="true"
+            android:focusable="true"
+            android:gravity="center"
+            android:text="@string/more_cancel_removal"
+            android:textColor="@color/more_action"
+            android:visibility="gone" />
+    </LinearLayout>
+</FrameLayout>
