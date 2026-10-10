@@ -23,10 +23,19 @@ const requiredFiles = [
   "app/src/main/AndroidManifest.xml",
   "app/src/main/java/com/ninepointnine/desktop/MainActivity.kt",
   "app/src/main/java/com/ninepointnine/desktop/debug/NavigationDemoAccessibilityService.kt",
+  "app/src/main/java/com/ninepointnine/desktop/input/RemoteInputCoordinator.kt",
+  "app/src/main/java/com/ninepointnine/desktop/input/RemoteInputProvider.kt",
+  "app/src/main/java/com/ninepointnine/desktop/input/RemoteInputSocketServer.kt",
+  "app/src/main/java/com/ninepointnine/desktop/input/RemoteInputMethodService.kt",
+  "app/src/main/java/com/ninepointnine/desktop/input/RemoteInputWire.kt",
+  "app/src/main/java/com/ninepointnine/desktop/input/RemoteInputRuntime.kt",
+  "app/src/test/java/com/ninepointnine/desktop/input/RemoteInputWireTest.kt",
+  "app/src/test/java/com/ninepointnine/desktop/input/RemoteInputSocketServerTest.kt",
   "app/src/main/java/com/ninepointnine/desktop/install/ApkInstallActivity.kt",
   "app/src/main/java/com/ninepointnine/desktop/install/ApkScanner.kt",
   "app/src/main/java/com/ninepointnine/desktop/system/FileManagerContract.kt",
   "app/src/main/res/xml/global_back_accessibility_service.xml",
+  "app/src/main/res/xml/remote_input_method.xml",
   "docs/plans/03desktop包名与签名迁移方案.md",
   "docs/plans/V1架构施工方案.md",
   "docs/operations/开发环境.md",
@@ -71,6 +80,25 @@ const globalBackService = read(
   "app/src/main/java/com/ninepointnine/desktop/debug/NavigationDemoAccessibilityService.kt",
 );
 const globalBackConfig = read("app/src/main/res/xml/global_back_accessibility_service.xml");
+const remoteInputProvider = read(
+  "app/src/main/java/com/ninepointnine/desktop/input/RemoteInputProvider.kt",
+);
+const remoteInputSocket = read(
+  "app/src/main/java/com/ninepointnine/desktop/input/RemoteInputSocketServer.kt",
+);
+const remoteInputIme = read(
+  "app/src/main/java/com/ninepointnine/desktop/input/RemoteInputMethodService.kt",
+);
+const remoteInputCoordinator = read(
+  "app/src/main/java/com/ninepointnine/desktop/input/RemoteInputCoordinator.kt",
+);
+const remoteInputRuntime = read(
+  "app/src/main/java/com/ninepointnine/desktop/input/RemoteInputRuntime.kt",
+);
+const remoteInputWire = read(
+  "app/src/main/java/com/ninepointnine/desktop/input/RemoteInputWire.kt",
+);
+const remoteInputImeConfig = read("app/src/main/res/xml/remote_input_method.xml");
 const fossifyPatch = read("vendor/fossify-file-manager-car/0001-car-integration.patch");
 const fossifyReleaseBuild = read("vendor/fossify-file-manager-car/build-core-release.sh");
 const fossifyReleaseSigning = read("vendor/fossify-file-manager-car/generate-release-signing.mjs");
@@ -151,6 +179,19 @@ if (apkInstallActivity.includes("requestPermissions(") ||
     !debugInstallScript.includes("appops set \"$EXPECTED_PACKAGE\" REQUEST_INSTALL_PACKAGES allow")) {
   failures.push("APK 所需权限未统一由安装流程授予，页面仍保留重复授权入口");
 }
+const installOnlyBranch = debugInstallScript.indexOf('if [[ "$INSTALL_ONLY" == true ]]');
+const smokeStart = debugInstallScript.indexOf('"${ADB[@]}" shell am start');
+if (!debugInstallScript.includes("--install-only)") ||
+    !debugInstallScript.includes("未知参数") ||
+    !debugInstallScript.includes('ADB=("$ANDROID_ADB_BIN" -s "$ADB_SERIAL")') ||
+    !debugInstallScript.includes('if [[ -z "$ADB_SERIAL" ]]') ||
+    installOnlyBranch < 0 || smokeStart <= installOnlyBranch ||
+    !debugInstallScript.slice(installOnlyBranch, smokeStart).includes("exit 0")) {
+  failures.push("Debug 交付脚本缺少显式 serial 或 install-only 启动前退出门禁");
+}
+const shellSyntax = spawnSync("bash", ["-n", join(root, "scripts/install-debug-to-device.sh")], { cwd: root });
+if (shellSyntax.status !== 0) failures.push("Debug 安装脚本 bash -n 失败");
+
 if (!manifest.includes('android:name=".debug.NavigationDemoAccessibilityService"') ||
     !manifest.includes('android:permission="android.permission.BIND_ACCESSIBILITY_SERVICE"') ||
     !manifest.includes('android:resource="@xml/global_back_accessibility_service"')) {
@@ -170,9 +211,92 @@ for (const forbidden of ["GLOBAL_ACTION_HOME", "GLOBAL_ACTION_RECENTS", "TYPE_AC
 for (const required of [
   'android:canPerformGestures="false"',
   'android:canRequestFilterKeyEvents="false"',
-  'android:canRetrieveWindowContent="false"',
+  'android:canRetrieveWindowContent="true"',
 ]) {
   if (!globalBackConfig.includes(required)) failures.push(`全局返回隐私配置缺少：${required}`);
+}
+if (!manifest.includes('android:authorities="${applicationId}.remoteinput"') ||
+    !manifest.includes('android:name=".input.RemoteInputProvider"') ||
+    !manifest.includes('android:name=".input.RemoteInputMethodService"') ||
+    !manifest.includes('android:permission="android.permission.BIND_INPUT_METHOD"')) {
+  failures.push("Manifest 缺少远程输入 Provider 或内置输入法声明");
+}
+if (!remoteInputProvider.includes("Binder.getCallingUid() == UID_ROOT") ||
+    !remoteInputProvider.includes("Binder.getCallingUid() == UID_SHELL") ||
+    !remoteInputProvider.includes("Base64.NO_WRAP") ||
+    !remoteInputProvider.includes("createReliablePipe") ||
+    !remoteInputProvider.includes("METHOD_GET_CAPABILITY") ||
+    !remoteInputProvider.includes("METHOD_GET_STATE") ||
+    !remoteInputProvider.includes("METHOD_BEGIN") ||
+    !remoteInputProvider.includes("METHOD_CANCEL") ||
+    !remoteInputProvider.includes("METHOD_CLAIM_RESTORE") ||
+    !remoteInputProvider.includes("METHOD_RELEASE_RESTORE") ||
+    !remoteInputProvider.includes("KEY_RESTORE_RELEASED") ||
+    !remoteInputProvider.includes("KEY_RESTORE_ALLOWED")) {
+  failures.push("远程输入 Provider 未保持 UID 门禁、frame 编码或协议调用");
+}
+if (!remoteInputSocket.includes("LocalServerSocket") ||
+    !remoteInputSocket.includes("peerCredentials.uid") ||
+    !remoteInputSocket.includes("MAX_CLIENTS = 2") ||
+    !remoteInputSocket.includes("ThreadPoolExecutor") ||
+    !remoteInputSocket.includes("ArrayBlockingQueue<RemoteInputState>(1)") ||
+    !remoteInputSocket.includes("HANDSHAKE_TIMEOUT_MILLIS = 5_000") ||
+    !remoteInputSocket.includes("socket.soTimeout = millis") ||
+    !remoteInputSocket.includes("readLine(input")) {
+  failures.push("远程输入 socket 未保持 localabstract、UID、两客户端和有界conflated队列");
+}
+if (!remoteInputCoordinator.includes("MAX_TEXT_BYTES = 32_768") ||
+    !remoteInputCoordinator.includes("DEADLINE_MILLIS = 10_000L") ||
+    !remoteInputCoordinator.includes("MAX_RECEIPTS = 32") ||
+    !remoteInputCoordinator.includes("frozenTarget") ||
+    !remoteInputCoordinator.includes("request.attempted") ||
+    !remoteInputCoordinator.includes("latestAcceptedId") ||
+    !remoteInputCoordinator.includes("claimRestore") ||
+    !remoteInputCoordinator.includes("releaseRestore") ||
+    !remoteInputCoordinator.includes("frozenFocus") ||
+    !remoteInputCoordinator.includes("val liveFocus") ||
+    !remoteInputRuntime.includes("saveRestoreClaim") ||
+    !remoteInputRuntime.includes("saveLatestAcceptedId") ||
+    !remoteInputRuntime.includes(".commit()") ||
+    !remoteInputRuntime.includes("latest_accepted_id")) {
+  failures.push("远程输入事务未保持文本上限、10秒截止、LRU、目标冻结或单次提交");
+}
+if (!remoteInputIme.includes("commitText(text, 1)") ||
+    !remoteInputIme.includes("currentInputConnection") ||
+    !remoteInputIme.includes("onEvaluateFullscreenMode(): Boolean = false") ||
+    remoteInputIme.includes("sendKeyEvent")) {
+  failures.push("内置输入法未保持有效编辑器全文提交和小型非全屏边界");
+}
+if (!remoteInputWire.includes('"capability"') ||
+    !remoteInputWire.includes('"state"') ||
+    !remoteInputWire.includes('"accepted"') ||
+    !remoteInputWire.includes('"result"') ||
+    !remoteInputWire.includes("MAX_REQUEST_FRAME_BYTES = 262_144") ||
+    !remoteInputWire.includes("MAX_STATE_FRAME_BYTES = 65_536") ||
+    !remoteInputWire.includes('"requestTransport", "socket"') ||
+    !remoteInputWire.includes('"restoreProtocol", "exclusive"') ||
+    !remoteInputWire.includes('"release_restore"') ||
+    !remoteInputImeConfig.includes("supportsSwitchingToNextInputMethod")) {
+  failures.push("远程输入 JSON v1 或输入法元数据缺失");
+}
+if (!globalBackConfig.includes('android:accessibilityEventTypes="typeWindowsChanged|typeWindowStateChanged|typeViewFocused"') ||
+    !globalBackConfig.includes('android:accessibilityFlags="flagRetrieveInteractiveWindows|flagReportViewIds"') ||
+    !globalBackConfig.includes('android:canRetrieveWindowContent="true"') ||
+    !globalBackService.includes("it.type == AccessibilityWindowInfo.TYPE_APPLICATION") ||
+    !globalBackService.includes("node.hashCode()") ||
+    !globalBackService.includes("node.viewIdResourceName") ||
+    !globalBackService.includes("source.refresh()") ||
+    !globalBackService.includes("source.recycle()") ||
+    !globalBackService.includes("FOCUS_INPUT") ||
+    !globalBackService.includes("RemoteInputTargetResolver.resolve") ||
+    !remoteInputIme.includes("currentFocus = RemoteInputRuntime::currentFocus") ||
+    globalBackService.includes("imePackages") ||
+    globalBackService.includes("targetPackage == packageName")) {
+  failures.push("无障碍服务未声明事件驱动的只读窗口元数据能力");
+}
+if (globalBackService.includes("event.text") ||
+    globalBackService.includes("getText()")) {
+  failures.push("无障碍服务读取了输入文字或节点内容");
 }
 if (!fileManagerContract.includes('PACKAGE_NAME = "org.fossify.filemanager.debug"') ||
     !fileManagerContract.includes("CAR_INTEGRATION_VERSION_METADATA") ||

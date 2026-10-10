@@ -10,6 +10,7 @@
 
 | 任务信号 | 必读文档 |
 |---|---|
+| 手机远程输入、输入法切换、Provider / socket 协议 | `../../03helper/docs/protocols/remote-input-contract.md`（协议唯一 owner） + `docs/plans/V1架构施工方案.md`（桌面实现边界） |
 | 复制模板后的第一轮初始化 | `.agents/skills/project-bootstrap/SKILL.md` |
 | 项目定位、系统边界、主链、不变量 | `docs/architecture/项目长期总纲.md` |
 | V1 抽屉、应用管理、权限、状态流和物理施工边界 | `docs/plans/V1架构施工方案.md` |

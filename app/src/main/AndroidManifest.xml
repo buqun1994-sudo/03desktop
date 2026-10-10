@@ -59,6 +59,25 @@
                 android:resource="@xml/global_back_accessibility_service" />
         </service>
 
+        <service
+            android:name=".input.RemoteInputMethodService"
+            android:exported="true"
+            android:label="@string/remote_input_ime_name"
+            android:permission="android.permission.BIND_INPUT_METHOD">
+            <intent-filter>
+                <action android:name="android.view.InputMethod" />
+            </intent-filter>
+            <meta-data
+                android:name="android.view.im"
+                android:resource="@xml/remote_input_method" />
+        </service>
+
+        <provider
+            android:name=".input.RemoteInputProvider"
+            android:authorities="${applicationId}.remoteinput"
+            android:exported="true"
+            android:grantUriPermissions="false" />
+
         <receiver
             android:name=".boot.BootReceiver"
             android:directBootAware="false"

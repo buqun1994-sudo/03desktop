@@ -1,5 +1,26 @@
 # 项目进度
 
+## 2026-10-10 高德目标与输入事务收口（真实主测通过，Debug 已最终覆盖安装）
+
+1. OEM 未将高德应用窗列入 accessibility windows，真实 root / 单点 findFocus / refresh 的 focused/editable 字段仍提供同包同窗证明。新增纯 `RemoteInputTargetResolver` 从当前证据补目标，根节点单独不能证明字段，不保留旧目标；设备恢复后真实高德输入框提交已由用户确认通过。
+2. 真实 view-focused 必须读取刷新后的实际 source token 并与同次字段 witness 校验，不按同包同窗替代。受理请求同时冻结字段 token，IME 提交前按需取得一次新鲜 root / findFocus / refresh 证明，重查 deadline 和输入连接；同应用新字段的 IME 回调早于无障碍事件也不能取得旧请求。没有字段证明时保守不提交，不读文字、不遍历树、不轮询、不保存 Node / Event。
+3. `claim_restore` 改为同步持久化的排他临界区，取得后取消未完成提交并阻止全部 begin；`release_restore` 仅同 UUID 成功写入 released 墓碑后放行，新 accepted 原子清墓碑。进程重建继续阻断；16 秒只诊断，不自动解锁。强杀 / 回执丢失 / 持久化失败漏 release 需要确认旧 worker 停止后主动处理，无自动修复 UI。capability 显式声明 `restoreProtocol:"exclusive"` 与固定方法；共同 owner 仍为 `../../03helper/docs/protocols/remote-input-contract.md`。
+4. 全量 `testDebugUnitTest lintDebug assembleDebug` 通过：JVM `131/131`、0 failures / errors / skipped，Lint 0 errors / 36 warnings。新增字段排序回归 9 项、排他恢复 / 存储适配回归 19 项，原目标 resolver 14 项。Android 配置 / 项目 / Skills / diff 护栏通过；配置护栏改为验证统一 nodeToken / 新鲜字段 / release 接线，不要求旧 source.hashCode 字面调用点。
+5. 设备以显式 serial `192.168.0.203:5555` 完成最新 Debug 保留数据覆盖安装；车机为 `S56_HQX / Android 9 / 1920x1080`。测试桌面无障碍服务已追加到原有授权列表，没有覆盖其它服务。发送前和发送后原默认输入法为 `com.kika.car.inputmethod/com.android.inputmethod.latin.LatinIME`；完成后 capability 回读 `available=true / keyboard=closed / targetPackage="" / targetWindow=-1 / sending=false`，是已恢复终态。
+6. 用户确认真实高德文字提交通过，且端到端速度已完全进入可接受范围；没有重复发送覆盖输入框。本次没有可审计的精确毫秒分布，入口仍保留 opt-in 计时日志，文档不伪造速度百分比。
+7. 最新本地与车机 APK 一致：`com.ninepointnine.desktop.test / 1.0.12-icar03-test (13)`，`6,323,699` bytes，SHA-256 `04ac3df758afe1dd7270a774e28ede1f06feab618c3acbbe02fd148a9085897b`；单 signer / APK v2 通过，Debug 证书 SHA-256 `2990047fddf6d6ec1eb7f83731fcc1398616e5fb83aec97542a4f132c35a1a27`，Launcher 已核验。共享 03 APP 登记仍为 `1.0.11-icar03/12` 和 clean，实际新版本与 dirty，登记检查按约 fail closed；未改 Cloud。
+8. 用户已明确授权提交两端仓库，本轮提交本地改动但不推送、不发布；未卸载、清数据、降级或重启设备。助手完整证据见 `../../03helper/docs/progress.md`。
+
+## 2026-10-10 可选手机远程输入端（自动验证与 Debug 交付完成，待车机主测）
+
+1. 复用既有 `NavigationDemoAccessibilityService` 组件名，事件只订阅窗口变化 / 窗口状态 / 视图焦点并启用 interactiveWindows / reportViewIds；读取窗口 ID、root package、事件 source 身份 / viewId，不读用户原文字、不遍历节点树、不截图或轮询。多个 `TYPE_INPUT_METHOD` 窗口取存在；只从 `TYPE_APPLICATION` 选择目标，含桌面自身应用窗口；IME 事件按真实 windowId 过滤。同资源 ID 的不同 source 仍判为新焦点，空窗口 / interrupt / 失联发布 unknown。
+2. 新增 `${applicationId}.remoteinput` Provider、lazy localabstract socket、root/shell UID 门禁、最多两个客户端的单槽 conflated 队列、bounded UTF-8 `op=begin` 正文（Provider Base64 begin 保留兼容）、10 秒 deadline、32 条 receipt、冻结目标、结果 reliable pipe、UUID-only 同步恢复 checkpoint 和 bundled `RemoteInputMethodService`；只在有效当前输入连接上一次提交全文，不发送 Enter / Search。Socket 首帧 5 秒、完整 NL、截断 / 坏 UTF-8 / 控制字符拒绝；subscribe 后无空闲截止，accept 失败退出，writer 超帧 / EOF 回收。
+3. 两端共同协议 owner 仍为 `../../03helper/docs/protocols/remote-input-contract.md`，本仓库只记录实现边界。`claim_restore` 为助手固定车机 guard 提供最新 accepted UUID 恢复资格，进程重建只保留 owner、不保存或重放文本；deadline 调度 / checkpoint 失败不得接受 begin，sending 真实反映协调器而非固定假值。
+4. 最终 `testDebugUnitTest lintDebug assembleDebug` 通过：JVM `89/89`（0 failures / errors / skipped），其中输入 Coordinator 18 / Wire 8 / Socket 6；Lint 0 errors / 36 warnings。Android 配置、项目结构、Skills、安装脚本 `bash -n` 和 `git diff --check` 通过。唯一版本递增为 `1.0.12-icar03 / code13`。
+5. APK `com.ninepointnine.desktop.test` / `1.0.12-icar03-test (13)` 为 `6,220,643` bytes，SHA-256 `956332be296679af0995e4e89ad439be4166cca36facdd62d8d6c5adb942c781`；单 signer、v2 通过，开发证书 SHA-256 `2990047fddf6d6ec1eb7f83731fcc1398616e5fb83aec97542a4f132c35a1a27`。使用显式车机 serial 和 `scripts/install-debug-to-device.sh --install-only` 保留数据安装成功，包名 / 版本 / Launcher / 设备 APK digest 全部一致；仅沿用已有安装白名单授权，不启动桌面 UI、不替换正式包。
+6. 只读 Provider capability 与一次真实 socket 订阅通过，返回协议身份及 `available=false / keyboard=unknown / sequence=0`，符合测试身份尚未启用无障碍的真值。既有正式桌面授权保持，未复制给 `.test`；未切换默认输入法、未提交真实文字、未进行车机交互或锁屏验证。用户启用测试桌面服务后按共同验证矩阵检查多语言 / 多行、同应用焦点变化、原 IME 恢复、后台通知与断线 guard。
+7. 共享 03 APP 登记仍为 `1.0.11-icar03 / 12` 和 clean，实际为新版本与 dirty，登记检查按约失败；未改 Cloud 索引掩盖冲突。两仓最终证据综合见 `../../03helper/docs/progress.md`。未提交、推送、创建 staging / Release、卸载、清数据、降级、重启或发布。
+
 ## 2026-10-10 点击热区回归修复（进行中，待正式版手测）
 
 1. 定位确认：Android 9 父子 View 分发不会由父层自动抢走子事件；上一版真正的问题是点击语义被绑定在可见 `6 x 150 px` 细线，以及点击移动超过系统容差后立即转入滑动判断，实际手指很容易命不中或取消点击。
